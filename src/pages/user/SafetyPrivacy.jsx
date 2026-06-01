@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ChevronRight, Fingerprint, Eye, EyeOff, Shield, MapPin } from 'lucide-react';
 
-const Toggle = ({ value, onChange, accent = '#00D8FF' }) => (
+const Toggle = ({ value, onChange, accent = 'var(--brand-cyan)' }) => (
   <div onClick={() => onChange(!value)}
     style={{ width: '46px', height: '26px', borderRadius: '99px', background: value ? accent : 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', position: 'relative', transition: 'all 0.3s', boxShadow: value ? `0 0 10px ${accent}50` : 'none', flexShrink: 0 }}
   >
@@ -37,7 +37,7 @@ const SafetyPrivacy = () => {
   return (
     <div style={{ height: '100%', background: 'var(--bg-base)', overflowY: 'auto', display: 'flex', flexDirection: 'column' }} className="no-scrollbar">
       {/* Header */}
-      <div style={{ background: 'linear-gradient(180deg, rgba(99,102,241,0.07) 0%, transparent 100%)', padding: '52px 20px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div style={{ background: 'linear-gradient(180deg, rgba(var(--brand-indigo-rgb), 0.07) 0%, transparent 100%)', padding: '52px 20px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
         <button onClick={() => navigate(-1)} className="btn-icon" style={{ width: '38px', height: '38px' }}>
           <ArrowLeft size={18} color="#9CA3AF" />
         </button>
@@ -53,12 +53,12 @@ const SafetyPrivacy = () => {
           <p style={{ fontSize: '0.7rem', fontWeight: 700, color: '#374151', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '10px' }}>Security</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <motion.div initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}>
-              <Row icon={<Fingerprint size={20} color="#6366F1" />} label="Biometric Login" sub="Face ID / Fingerprint unlock">
-                <Toggle value={biometric} onChange={setBiometric} accent="#6366F1" />
+              <Row icon={<Fingerprint size={20} color="var(--brand-indigo)" />} label="Biometric Login" sub="Face ID / Fingerprint unlock">
+                <Toggle value={biometric} onChange={setBiometric} accent="var(--brand-indigo)" />
               </Row>
             </motion.div>
             <motion.div initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.05 }}>
-              <Row icon={<Shield size={20} color="#00D8FF" />} label="Two-Factor Auth" sub="Extra login verification" onClick={() => {}} />
+              <Row icon={<Shield size={20} color="var(--brand-cyan)" />} label="Two-Factor Auth" sub="Extra login verification" onClick={() => {}} />
             </motion.div>
             <motion.div initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
               <Row icon={<span style={{ fontSize: '1rem' }}>🔑</span>} label="Change Password" onClick={() => {}} />

@@ -1,10 +1,9 @@
-import React from 'react';
 import { Outlet } from 'react-router-dom';
 
 const MobileContainer = () => (
   <div
     className="min-h-screen flex items-center justify-center"
-    style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.08) 0%, #040608 60%)' }}
+    style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(var(--brand-indigo-rgb), 0.08) 0%, #040608 60%)' }}
   >
     <div
       className="relative overflow-hidden flex flex-col"

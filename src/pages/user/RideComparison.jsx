@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ChevronRight, Package, Weight, Ruler, Info } from 'lucide-react';
-import MapPlaceholder from '../../components/ui/MapPlaceholder';
+import { ArrowLeft, ChevronRight, Sparkles, Navigation, ShieldCheck, Zap, Clock, Loader2, Train } from 'lucide-react';
+import RouteMap from '../../components/ui/RouteMap';
+import VehicleLoader from '../../components/ui/VehicleLoader';
+import { useAuth } from '../../lib/AuthContext';
+import { createRideRequest } from '../../lib/firestore';
+import AIChatBot from '../../components/ui/AIChatBot';
 
 /* ── RIDE OPTIONS ── */
 const rides = [
@@ -10,230 +14,328 @@ const rides = [
     id: 'smart', name: 'SmartRide AI', tag: 'AI Pick', tagColor: '#00D8FF',
     desc: 'Cab + Metro · Multi-modal', price: '₹210', time: '22 min',
     saving: 'Save 42%', savingColor: '#10B981',
-    border: 'rgba(0,216,255,0.3)', bg: 'rgba(0,216,255,0.04)',
-    icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#00D8FF" strokeWidth="2" strokeLinecap="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 12h4M12 8v4" strokeWidth="2.5"/><circle cx="16" cy="12" r="2" fill="#00D8FF" stroke="none"/></svg>,
+    border: 'rgba(0, 216, 255, 0.4)', bg: 'rgba(0, 216, 255, 0.05)',
+    icon: <Zap size={22} color="#00D8FF" />,
   },
   {
     id: 'ev', name: 'Premium EV', tag: 'Eco', tagColor: '#10B981',
     desc: 'Zero emission · High comfort', price: '₹340', time: '25 min',
-    border: 'rgba(255,255,255,0.07)', bg: 'transparent',
-    icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>,
+    border: 'rgba(16, 185, 129, 0.2)', bg: 'rgba(16, 185, 129, 0.03)',
+    icon: <ShieldCheck size={22} color="#10B981" />,
   },
   {
-    id: 'eco', name: 'Economy', tag: null,
-    desc: 'Standard sedan · 4 seats', price: '₹280', time: '30 min',
-    border: 'rgba(255,255,255,0.07)', bg: 'transparent',
-    icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round"><rect x="1" y="10" width="22" height="9" rx="3"/><path d="M6 10V7a6 6 0 0 1 12 0v3"/><circle cx="8" cy="17" r="1.5" fill="#6B7280" stroke="none"/><circle cx="16" cy="17" r="1.5" fill="#6B7280" stroke="none"/></svg>,
+    id: 'transit', name: 'Public Transit', tag: 'Eco Pick', tagColor: '#10B981',
+    desc: 'Bus · Metro · Local Train', price: '₹35', time: '32 min',
+    border: 'rgba(16, 185, 129, 0.4)', bg: 'rgba(16, 185, 129, 0.05)',
+    icon: <Train size={22} color="#10B981" />,
   },
 ];
 
-/* ── PARCEL OPTIONS ── */
-const parcels = [
-  {
-    id: 'express', name: 'Express Delivery', tag: 'Fastest', tagColor: '#F59E0B',
-    desc: 'Bike courier · Upto 5kg', price: '₹90', eta: '18 min',
-    maxWeight: '5 kg', maxSize: '40×30cm',
-    border: 'rgba(245,158,11,0.3)', bg: 'rgba(245,158,11,0.04)',
-    icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="17"/><line x1="9.5" y1="14.5" x2="14.5" y2="14.5"/></svg>,
-  },
-  {
-    id: 'standard', name: 'Standard Parcel', tag: null,
-    desc: 'Car delivery · Upto 20kg', price: '₹160', eta: '35 min',
-    maxWeight: '20 kg', maxSize: '60×50cm',
-    border: 'rgba(255,255,255,0.07)', bg: 'transparent',
-    icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>,
-  },
-  {
-    id: 'heavy', name: 'Heavy Freight', tag: 'New',  tagColor: '#A855F7',
-    desc: 'Van · Upto 100kg · Fragile ok', price: '₹320', eta: '50 min',
-    maxWeight: '100 kg', maxSize: '120×80cm',
-    border: 'rgba(168,85,247,0.25)', bg: 'rgba(168,85,247,0.04)',
-    icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#A855F7" strokeWidth="2" strokeLinecap="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>,
-  },
-];
-
-/* ── Parcel Detail Form ── */
-const ParcelDetailsForm = ({ parcels, selected, setSelected }) => {
-  const [weight, setWeight] = useState('');
-  const [notes, setNotes] = useState('');
-  const [fragile, setFragile] = useState(false);
-  const sel = parcels.find(p => p.id === selected);
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      {/* Options */}
-      {parcels.map(p => {
-        const active = selected === p.id;
-        return (
-          <motion.button key={p.id} onClick={() => setSelected(p.id)} whileHover={{ y: -1 }}
-            style={{ width: '100%', textAlign: 'left', cursor: 'pointer', background: active ? p.bg : 'rgba(15,22,35,0.5)', border: `1px solid ${active ? p.border : 'rgba(255,255,255,0.06)'}`, borderRadius: '16px', padding: '14px', transition: 'all 0.2s ease' }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '13px', background: 'rgba(15,22,35,0.8)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{p.icon}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '3px' }}>
-                  <span style={{ fontSize: '0.92rem', fontWeight: 700, color: '#F1F5F9' }}>{p.name}</span>
-                  {p.tag && <span style={{ fontSize: '0.62rem', fontWeight: 800, color: p.tagColor, background: `${p.tagColor}18`, border: `1px solid ${p.tagColor}30`, borderRadius: '99px', padding: '2px 7px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{p.tag}</span>}
-                </div>
-                <p style={{ fontSize: '0.78rem', color: '#4B5563' }}>{p.desc}</p>
-                <div style={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
-                  <span style={{ fontSize: '0.7rem', color: '#6B7280', display: 'flex', alignItems: 'center', gap: '3px' }}><Weight size={11} />{p.maxWeight}</span>
-                  <span style={{ fontSize: '0.7rem', color: '#6B7280', display: 'flex', alignItems: 'center', gap: '3px' }}><Ruler size={11} />{p.maxSize}</span>
-                </div>
-              </div>
-              <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                <p style={{ fontSize: '1.05rem', fontWeight: 800, color: active ? '#F1F5F9' : '#9CA3AF', marginBottom: '2px' }}>{p.price}</p>
-                <p style={{ fontSize: '0.75rem', color: active ? p.tagColor || '#00D8FF' : '#4B5563' }}>{p.eta}</p>
-              </div>
-            </div>
-          </motion.button>
-        );
-      })}
-
-      {/* Package Details */}
-      <div style={{ background: 'rgba(15,22,35,0.7)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#4B5563', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '2px' }}>Package Details</p>
-        <input value={weight} onChange={e => setWeight(e.target.value)} type="number" placeholder={`Weight in kg (max ${sel?.maxWeight})`} className="field" style={{ padding: '12px 14px', fontSize: '0.88rem' }} />
-        <input value={notes} onChange={e => setNotes(e.target.value)} type="text" placeholder="Special instructions (optional)" className="field" style={{ padding: '12px 14px', fontSize: '0.88rem' }} />
-        <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', padding: '10px 14px', background: fragile ? 'rgba(245,158,11,0.06)' : 'rgba(255,255,255,0.02)', border: fragile ? '1px solid rgba(245,158,11,0.25)' : '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', transition: 'all 0.2s' }} onClick={() => setFragile(!fragile)}>
-          <div style={{ width: '20px', height: '20px', borderRadius: '6px', border: `2px solid ${fragile ? '#F59E0B' : 'rgba(255,255,255,0.15)'}`, background: fragile ? '#F59E0B' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s' }}>
-            {fragile && <svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none"/></svg>}
-          </div>
-          <div>
-            <p style={{ fontSize: '0.85rem', fontWeight: 600, color: fragile ? '#F59E0B' : '#F1F5F9' }}>⚠️ Fragile Item</p>
-            <p style={{ fontSize: '0.72rem', color: '#4B5563', marginTop: '1px' }}>Extra care handling · +₹20</p>
-          </div>
-        </label>
-      </div>
-    </div>
-  );
-};
-
-/* ── MAIN SCREEN ── */
 const RideComparison = () => {
   const navigate = useNavigate();
-  const [tab, setTab] = useState('ride');          // 'ride' | 'parcel'
+  const location = useLocation();
+  const { user, currentLocation } = useAuth();
   const [selRide, setSelRide] = useState('smart');
-  const [selParcel, setSelParcel] = useState('express');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isBooking, setIsBooking] = useState(false);
+  const [viewState, setViewState] = useState('select'); // 'select' | 'compare'
+  const [selectedComp, setSelectedComp] = useState('smartride');
+  const [chatOpen, setChatOpen] = useState(false);
 
-  const confirmLabel = tab === 'ride'
-    ? `Confirm ${rides.find(r => r.id === selRide)?.name}`
-    : `Schedule ${parcels.find(p => p.id === selParcel)?.name}`;
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 2500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const destination = location.state?.dropoff || 'Downtown Metro Station';
+
+  const competitorApps = [
+    { id: 'smartride', name: 'SmartRide AI', price: parseInt(rides.find(r => r.id === selRide)?.price.replace('₹', '') || 0), time: rides.find(r => r.id === selRide)?.time || '0 min', url: null, color: '#00D8FF' },
+    { id: 'rapido', name: 'Rapido Auto', price: 220, time: '25 min', url: 'https://rapido.bike/', color: '#FFD700' },
+    { id: 'uber', name: 'Uber Go', price: 265, time: '26 min', url: 'https://m.uber.com/', color: '#FFFFFF' },
+    { id: 'ola', name: 'Ola Mini', price: 280, time: '28 min', url: 'https://book.olacabs.com/', color: '#A5C933' },
+  ].sort((a, b) => a.price - b.price);
+
+  const confirmLabel = `Confirm ${rides.find(r => r.id === selRide)?.name}`;
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg-base)', position: 'relative' }}>
-      {/* Map */}
-      <div style={{ height: '38%', position: 'relative' }}>
-        <MapPlaceholder />
-        <div style={{ position: 'absolute', top: '48px', left: '20px', zIndex: 20 }}>
-          <button onClick={() => navigate(-1)} className="btn-icon" style={{ width: '40px', height: '40px' }}>
-            <ArrowLeft size={18} color="#9CA3AF" />
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg-base)', position: 'relative', overflow: 'hidden' }}>
+      {/* Background Glow */}
+      <div style={{ position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)', filter: 'blur(40px)', zIndex: 0 }} />
+
+      {/* Map Section */}
+      <div style={{ height: '40%', position: 'relative', overflow: 'hidden' }}>
+        <RouteMap origin={currentLocation?.coords} destination={destination} travelMode={selRide === 'transit' ? 'TRANSIT' : 'DRIVING'} />
+        <div style={{ position: 'absolute', top: '56px', left: '20px', zIndex: 50 }}>
+          <button onClick={() => navigate(-1)} className="btn-icon" style={{ width: '44px', height: '44px', borderRadius: '14px', background: 'var(--bg-surface)', backdropFilter: 'blur(20px)' }}>
+            <ArrowLeft size={20} color="var(--text-main)" />
           </button>
         </div>
-        {/* Route Pill */}
-        <div style={{ position: 'absolute', bottom: '24px', left: '16px', right: '16px', zIndex: 20 }}>
-          <div style={{ background: 'rgba(15,22,35,0.93)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 4px 24px rgba(0,0,0,0.5)' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
-              <div style={{ width: '7px', height: '7px', borderRadius: '99px', background: '#00D8FF' }} />
-              <div style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.15)' }} />
-              <div style={{ width: '7px', height: '7px', borderRadius: '99px', background: '#6366F1' }} />
+
+        {/* Floating Destination Card */}
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          style={{ position: 'absolute', bottom: '32px', left: '20px', right: '20px', zIndex: 50 }}
+        >
+          <div style={{ 
+            background: 'var(--bg-surface)', 
+            backdropFilter: 'blur(24px)', 
+            border: '1px solid var(--border-ui)', 
+            borderRadius: '20px', 
+            padding: '16px 20px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '14px', 
+            boxShadow: '0 12px 48px rgba(0,0,0,0.2)' 
+          }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+              <div style={{ width: '10px', height: '10px', borderRadius: '50%', border: '2px solid #00D8FF', background: 'var(--bg-base)' }} />
+              <div style={{ width: '1px', height: '20px', background: 'linear-gradient(180deg, #00D8FF, #6366F1)' }} />
+              <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#6366F1', boxShadow: '0 0 10px #6366F1' }} />
             </div>
             <div style={{ flex: 1 }}>
-              <p style={{ fontSize: '0.78rem', color: '#4B5563', marginBottom: '3px' }}>Tech Park, Sector 4</p>
-              <p style={{ fontSize: '0.88rem', color: '#F1F5F9', fontWeight: 600 }}>Downtown Metro Station</p>
+              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>Current Route</p>
+              <h3 style={{ fontSize: '1rem', color: 'var(--text-main)', fontWeight: 800 }}>{destination}</h3>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
-      {/* Bottom Sheet */}
-      <div style={{ flex: 1, background: 'var(--bg-surface)', borderTopLeftRadius: '28px', borderTopRightRadius: '28px', marginTop: '-20px', zIndex: 30, display: 'flex', flexDirection: 'column', boxShadow: '0 -8px 40px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.06)' }}>
-        {/* Handle */}
-        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '12px' }}>
-          <div style={{ width: '36px', height: '4px', borderRadius: '99px', background: 'rgba(255,255,255,0.1)' }} />
+      {/* Bottom Sheet UI */}
+      <div style={{ 
+        flex: 1, 
+        background: 'var(--bg-surface)', 
+        backdropFilter: 'blur(30px) saturate(180%)',
+        borderTopLeftRadius: '32px', 
+        borderTopRightRadius: '32px', 
+        marginTop: '-24px', 
+        zIndex: 100, 
+        display: 'flex', 
+        flexDirection: 'column', 
+        border: '1px solid var(--border-ui)',
+        boxShadow: '0 -20px 60px rgba(0,0,0,0.2)'
+      }}>
+        {/* Pull Indicator */}
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '12px' }}>
+          <div style={{ width: '40px', height: '5px', borderRadius: '99px', background: 'var(--border-ui)' }} />
         </div>
 
-        {/* Tab Switcher */}
-        <div style={{ padding: '14px 16px 0' }}>
-          <div style={{ display: 'flex', background: 'rgba(15,22,35,0.8)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', padding: '4px', gap: '4px' }}>
-            {[
-              { id: 'ride',   label: '🚗 Ride' },
-              { id: 'parcel', label: '📦 Parcel' },
-            ].map(t => (
-              <button key={t.id} onClick={() => setTab(t.id)}
-                style={{ flex: 1, height: '38px', borderRadius: '10px', fontSize: '0.88rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.25s', background: tab === t.id ? '#6366F1' : 'transparent', color: tab === t.id ? 'white' : '#6B7280', border: 'none', boxShadow: tab === t.id ? '0 4px 16px rgba(99,102,241,0.4)' : 'none' }}
-              >
-                {t.label}
-              </button>
-            ))}
+        {/* Tab Selector */}
+        <div style={{ padding: '0 20px 16px' }}>
+          <div style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', padding: '5px', gap: '5px' }}>
+             <button style={{ flex: 1, height: '42px', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 800, cursor: 'pointer', background: 'var(--brand-indigo)', color: 'white', border: 'none', boxShadow: '0 8px 20px rgba(99,102,241,0.3)' }}>
+               🚗 Ride
+             </button>
+             <button onClick={() => navigate('/user/parcel')} style={{ flex: 1, height: '42px', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer', background: 'transparent', color: '#6B7280', border: 'none' }}>
+               📦 Parcel
+             </button>
           </div>
         </div>
 
-        {/* Header row */}
-        <div style={{ padding: '12px 20px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#F1F5F9', letterSpacing: '-0.01em' }}>
-            {tab === 'ride' ? 'Choose a Ride' : 'Send a Parcel'}
+        {/* Contextual Header */}
+        <div style={{ padding: '0 24px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+            {viewState === 'select' ? 'Choose Ride' : 'Live Comparison'}
           </h2>
-          {tab === 'ride' && (
-            <button onClick={() => navigate('/user/ai-insights')}
-              style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(0,216,255,0.08)', border: '1px solid rgba(0,216,255,0.2)', borderRadius: '10px', padding: '5px 10px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700, color: '#00D8FF' }}
+          {viewState === 'select' && (
+            <motion.button 
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setChatOpen(true)}
+              style={{ 
+                display: 'flex', alignItems: 'center', gap: '6px', 
+                background: 'rgba(0, 216, 255, 0.1)', 
+                border: '1px solid rgba(0, 216, 255, 0.2)', 
+                borderRadius: '12px', padding: '6px 12px', 
+                cursor: 'pointer', fontSize: '0.75rem', fontWeight: 800, color: '#00D8FF' 
+              }}
             >
-              <Info size={12} /> Why this?
-            </button>
-          )}
-          {tab === 'parcel' && (
-            <span style={{ fontSize: '0.75rem', color: '#6B7280', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Package size={13} /> Real-time tracking
-            </span>
+              <Sparkles size={14} /> Chubby AI
+            </motion.button>
           )}
         </div>
 
-        {/* Content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '10px', paddingBottom: '6px' }} className="no-scrollbar">
+        {/* Dynamic Content Area */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }} className="no-scrollbar">
           <AnimatePresence mode="wait">
-            {tab === 'ride' ? (
-              <motion.div key="ride" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {rides.map(r => {
-                  const active = selRide === r.id;
-                  return (
-                    <motion.button key={r.id} onClick={() => setSelRide(r.id)} whileHover={{ y: -1 }}
-                      style={{ width: '100%', textAlign: 'left', cursor: 'pointer', background: active ? r.bg : 'rgba(15,22,35,0.5)', border: `1px solid ${active ? r.border : 'rgba(255,255,255,0.06)'}`, borderRadius: '16px', padding: '14px', transition: 'all 0.2s' }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ width: '48px', height: '48px', borderRadius: '13px', background: 'rgba(15,22,35,0.8)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{r.icon}</div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '3px' }}>
-                            <span style={{ fontSize: '0.92rem', fontWeight: 700, color: '#F1F5F9' }}>{r.name}</span>
-                            {r.tag && <span style={{ fontSize: '0.62rem', fontWeight: 800, color: r.tagColor, background: `${r.tagColor}18`, border: `1px solid ${r.tagColor}30`, borderRadius: '99px', padding: '2px 7px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{r.tag}</span>}
+            {isLoading ? (
+              <motion.div key="loader" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ height: '100%', display: 'flex', alignItems: 'center' }}>
+                <VehicleLoader />
+              </motion.div>
+            ) : viewState === 'select' ? (
+              <motion.div key="select" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.4 }} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                 {rides.map(r => {
+                   const isActive = selRide === r.id;
+                   return (
+                     <motion.button
+                       key={r.id}
+                       onClick={() => setSelRide(r.id)}
+                       whileHover={{ scale: 1.01 }}
+                       whileTap={{ scale: 0.98 }}
+                        style={{ 
+                          width: '100%', textAlign: 'left', cursor: 'pointer', 
+                          background: isActive ? r.bg : 'var(--bg-card)', 
+                          border: `1px solid ${isActive ? r.tagColor : 'var(--border-ui)'}`, 
+                          borderRadius: '24px', padding: '20px', position: 'relative', overflow: 'hidden',
+                          transition: 'all 0.3s'
+                        }}
+                     >
+                        {isActive && (
+                          <motion.div 
+                            layoutId="activeGlow"
+                            style={{ position: 'absolute', inset: 0, background: `radial-gradient(circle at top right, ${r.tagColor}15, transparent 70%)` }}
+                          />
+                        )}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', position: 'relative', zIndex: 1 }}>
+                          <div style={{ 
+                            width: '52px', height: '52px', borderRadius: '16px', 
+                            background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)', 
+                            display: 'flex', alignItems: 'center', justifyContent: 'center' 
+                          }}>{r.icon}</div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                              <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-main)' }}>{r.name}</span>
+                              {r.tag && <span style={{ fontSize: '0.65rem', fontWeight: 900, color: r.tagColor, background: `${r.tagColor}15`, border: `1px solid ${r.tagColor}30`, borderRadius: '6px', padding: '3px 8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{r.tag}</span>}
+                            </div>
+                            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>{r.desc}</p>
                           </div>
-                          <p style={{ fontSize: '0.78rem', color: '#4B5563' }}>{r.desc}</p>
+                          <div style={{ textAlign: 'right' }}>
+                            <p style={{ fontSize: '1.25rem', fontWeight: 900, color: isActive ? 'var(--text-main)' : 'var(--text-muted)' }}>{r.price}</p>
+                            <p style={{ fontSize: '0.75rem', color: isActive ? r.tagColor : 'var(--text-muted)', fontWeight: 700 }}>{r.time}</p>
+                          </div>
                         </div>
-                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                          <p style={{ fontSize: '1.05rem', fontWeight: 800, color: active ? '#F1F5F9' : '#9CA3AF', marginBottom: '2px' }}>{r.price}</p>
-                          <p style={{ fontSize: '0.75rem', color: active ? '#00D8FF' : '#4B5563' }}>{r.time}</p>
-                          {r.saving && active && <span style={{ fontSize: '0.65rem', fontWeight: 700, color: r.savingColor, background: `${r.savingColor}15`, borderRadius: '6px', padding: '2px 6px', display: 'inline-block', marginTop: '3px' }}>{r.saving}</span>}
-                        </div>
-                      </div>
-                    </motion.button>
-                  );
-                })}
+                     </motion.button>
+                   );
+                 })}
               </motion.div>
             ) : (
-              <motion.div key="parcel" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
-                <ParcelDetailsForm parcels={parcels} selected={selParcel} setSelected={setSelParcel} />
+              <motion.div key="compare" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                 {/* Premium Comparison Grid */}
+                 <div style={{ background: 'var(--bg-card)', borderRadius: '24px', border: '1px solid var(--border-ui)', overflow: 'hidden', boxShadow: 'var(--shadow-sm)' }}>
+                    {competitorApps.map((comp, idx) => {
+                      const isActive = selectedComp === comp.id;
+                      return (
+                        <div 
+                          key={comp.id} 
+                          onClick={() => setSelectedComp(comp.id)}
+                           style={{ 
+                            padding: '20px 24px', 
+                            borderBottom: idx !== competitorApps.length - 1 ? '1px solid var(--border-ui)' : 'none',
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            background: isActive ? 'rgba(var(--brand-cyan-rgb), 0.08)' : 'transparent',
+                            cursor: 'pointer', transition: 'all 0.2s'
+                          }}
+                        >
+                           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                               <div style={{ 
+                                width: '48px', height: '48px', borderRadius: '14px', 
+                                background: isActive ? comp.color : 'var(--bg-elevated)',
+                                border: '1px solid var(--border-ui)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                              }}>
+                                {comp.id === 'smartride' ? (
+                                  <Zap size={20} color={isActive ? "#05070A" : "var(--brand-cyan)"} />
+                                ) : (
+                                  <Navigation size={20} color={isActive ? "#05070A" : "#6B7280"} />
+                                )}
+                              </div>
+                               <div>
+                                 <h4 style={{ fontSize: '1rem', fontWeight: 800, color: isActive ? 'var(--text-main)' : 'var(--text-muted)' }}>{comp.name}</h4>
+                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                                   <Clock size={12} color="var(--text-muted)" />
+                                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>ETA {comp.time}</span>
+                                 </div>
+                               </div>
+                           </div>
+                           <div style={{ textAlign: 'right' }}>
+                              <p style={{ fontSize: '1.25rem', fontWeight: 900, color: isActive ? 'var(--text-main)' : 'var(--text-muted)' }}>₹{comp.price}</p>
+                              {idx === 0 && <span style={{ fontSize: '0.6rem', fontWeight: 900, color: '#10B981', background: 'rgba(16,185,129,0.1)', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>Cheapest</span>}
+                           </div>
+                        </div>
+                      );
+                    })}
+                 </div>
+
+                 {/* AI Insights Card */}
+                 <motion.div 
+                   onClick={() => setChatOpen(true)}
+                   whileHover={{ scale: 1.02 }}
+                   style={{ 
+                     background: 'linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(0,216,255,0.1) 100%)',
+                     border: '1px solid rgba(99,102,241,0.2)', borderRadius: '24px', padding: '24px', cursor: 'pointer'
+                   }}
+                 >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                       <div style={{ padding: '8px', background: 'rgba(99,102,241,0.2)', borderRadius: '12px' }}>
+                         <Sparkles size={20} color="#6366F1" />
+                       </div>
+                       <h4 style={{ fontSize: '1rem', fontWeight: 900, color: 'var(--text-main)' }}>Ask Chubby</h4>
+                    </div>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                      Choosing <strong>SmartRide AI</strong> saves you <strong>₹55</strong> by combining a short walk with a direct pickup. 
+                      <span style={{ color: '#00D8FF', fontWeight: 700, marginLeft: '6px' }}>View Analysis →</span>
+                    </p>
+                 </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Confirm Button */}
-        <div style={{ padding: '12px 16px', background: 'var(--bg-surface)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-          <button className="btn-primary w-full" style={{ height: '52px', fontSize: '0.97rem', gap: '8px', width: '100%' }}>
-            {confirmLabel}
-            <ChevronRight size={18} />
-          </button>
+        {/* Final Action Button */}
+        <div style={{ padding: '20px 24px 32px', borderTop: '1px solid var(--border-ui)' }}>
+           <div style={{ display: 'flex', gap: '12px' }}>
+              {viewState === 'compare' && (
+                <button onClick={() => setViewState('select')} className="btn-icon" style={{ width: '56px', height: '56px', borderRadius: '18px' }}>
+                  <ArrowLeft size={24} color="#F1F5F9" />
+                </button>
+              )}
+              <motion.button 
+                whileTap={{ scale: 0.98 }}
+                disabled={isBooking || isLoading}
+                onClick={async () => {
+                  if (viewState === 'select') setViewState('compare');
+                  else {
+                    const target = competitorApps.find(c => c.id === selectedComp);
+                    if (target) {
+                      if (target.id === 'smartride') {
+                        try {
+                          setIsBooking(true);
+                          const rideId = await createRideRequest(user.uid, {
+                            rideType: selRide,
+                            price: target.price,
+                            pickup: "Current Location",
+                            dropoff: destination,
+                            eta: target.time
+                          });
+                          navigate('/user/activity', { state: { rideId, confirmed: true } });
+                        } catch {
+                          setIsBooking(false);
+                        }
+                      } else if (target.url) {
+                        window.open(target.url, '_blank');
+                      }
+                    }
+                  }
+                }}
+                className="btn-primary" 
+                style={{ flex: 1, height: '56px', fontSize: '1.1rem', fontWeight: 900, borderRadius: '18px', gap: '10px', opacity: (isBooking || isLoading) ? 0.7 : 1 }}
+              >
+                {(isBooking || isLoading) ? <Loader2 className="animate-spin" size={20} /> : (viewState === 'select' ? confirmLabel : `Book on ${competitorApps.find(c => c.id === selectedComp)?.name}`)}
+                {!(isBooking || isLoading) && (viewState === 'select' ? <ChevronRight size={20} /> : <Navigation size={20} />)}
+              </motion.button>
+            </div>
         </div>
       </div>
+      <AIChatBot 
+        isOpen={chatOpen} 
+        onClose={() => setChatOpen(false)} 
+        pickup={currentLocation?.address || 'Current Location'} 
+        dropoff={destination} 
+        onSelectTransitMode={(mode = 'transit') => {
+          setSelRide(mode);
+          setChatOpen(false);
+        }}
+      />
     </div>
   );
 };

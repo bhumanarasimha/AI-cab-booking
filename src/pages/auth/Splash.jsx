@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import appIcon from '../../assets/app-icon.png';
 
 const Splash = () => {
   const navigate = useNavigate();
@@ -37,21 +38,13 @@ const Splash = () => {
       >
         <div style={{
           width: '88px', height: '88px', borderRadius: '28px',
-          background: 'linear-gradient(135deg, #6366F1 0%, #00D8FF 100%)',
-          boxShadow: '0 20px 60px rgba(99,102,241,0.5)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '28px'
+          boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '28px',
+          overflow: 'hidden',
+          background: 'var(--bg-elevated)',
+          border: '1px solid var(--border-ui)'
         }}>
-          {/* Custom AI Icon */}
-          <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-            <path d="M22 4L38 13V31L22 40L6 31V13L22 4Z" stroke="white" strokeWidth="2" strokeLinejoin="round" fill="rgba(255,255,255,0.1)"/>
-            <circle cx="22" cy="22" r="6" fill="white"/>
-            <circle cx="22" cy="10" r="2.5" fill="rgba(255,255,255,0.7)"/>
-            <circle cx="22" cy="34" r="2.5" fill="rgba(255,255,255,0.7)"/>
-            <circle cx="10" cy="16" r="2.5" fill="rgba(255,255,255,0.7)"/>
-            <circle cx="34" cy="16" r="2.5" fill="rgba(255,255,255,0.7)"/>
-            <circle cx="10" cy="28" r="2.5" fill="rgba(255,255,255,0.7)"/>
-            <circle cx="34" cy="28" r="2.5" fill="rgba(255,255,255,0.7)"/>
-          </svg>
+          <img src={appIcon} alt="SmartRide AI Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
 
         <motion.div
@@ -60,7 +53,7 @@ const Splash = () => {
           transition={{ delay: 0.35, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="text-center"
         >
-          <h1 style={{ fontSize: '2.4rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#F1F5F9', lineHeight: 1 }}>
+          <h1 style={{ fontSize: '2.4rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-main)', lineHeight: 1 }}>
             SmartRide
             <span style={{ background: 'linear-gradient(90deg, #00D8FF, #6366F1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}> AI</span>
           </h1>

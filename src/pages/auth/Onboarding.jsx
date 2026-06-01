@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
@@ -55,7 +55,7 @@ const Onboarding = () => {
 
   const next = useCallback(() => {
     if (idx < slides.length - 1) setIdx(idx + 1);
-    else navigate('/role-selection');
+    else navigate('/login');
   }, [idx, navigate]);
 
   useEffect(() => {
@@ -91,7 +91,7 @@ const Onboarding = () => {
       {/* Skip */}
       <div className="flex justify-end p-6 pt-10 z-10">
         <button
-          onClick={() => navigate('/role-selection')}
+          onClick={() => navigate('/login')}
           style={{ color: '#4B5563', fontSize: '0.875rem', fontWeight: 500 }}
           className="hover:text-white transition-colors"
         >
@@ -128,7 +128,7 @@ const Onboarding = () => {
               {s.label}
             </div>
 
-            <h2 style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#F1F5F9', lineHeight: 1.15, marginBottom: '16px', whiteSpace: 'pre-line' }}>
+            <h2 style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-main)', lineHeight: 1.15, marginBottom: '16px', whiteSpace: 'pre-line' }}>
               {s.title}
             </h2>
             <p style={{ fontSize: '0.95rem', color: '#6B7280', lineHeight: 1.7, maxWidth: '280px' }}>
