@@ -20,9 +20,9 @@ const Login = () => {
   const { user, loading, loginWithGoogle, loginWithFacebook, loginWithApple, loginWithEmail, sendOtp, confirmOtp } = useAuth();
   const [method, setMethod] = useState('password'); // 'password' | 'otp'
   const [step, setStep] = useState('entry'); // 'entry' | 'otp-verify'
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('bhumanarasimha25@gmail.com');
   const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState('demo');
   const [showPw, setShowPw] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
