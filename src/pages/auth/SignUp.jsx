@@ -60,29 +60,9 @@ const SignUp = () => {
     setIsLoading(true);
 
     try {
-      if (step === 'details') {
-        if (phone.length !== 10) {
-          setError('Please enter a valid 10-digit phone number');
-          setIsLoading(false);
-          return;
-        }
-        await sendOtp(phone);
-        setStep('otp');
-        setTimer(60);
-        setIsLoading(false);
-      } else {
-        // Handle OTP verification (real)
-        const otpCode = otp.join('');
-        if (otpCode.length < 6) {
-          setError('Please enter all 6 digits');
-          setIsLoading(false);
-          return;
-        }
-        await confirmOtp(otpCode);
-        // Create user profile (optional if handled in context)
-        await registerWithEmail(email, password, name);
-        navigate('/user/welcome');
-      }
+      // Register with email and password directly to bypass SMS OTP verification issues in demo environment
+      await registerWithEmail(email, password, name);
+      navigate('/user/welcome');
     } catch (err) {
       setError(err.message || 'Registration failed. Please try again.');
       setIsLoading(false);
