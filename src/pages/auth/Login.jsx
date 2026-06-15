@@ -222,6 +222,20 @@ const Login = () => {
               </div>
             )}
 
+            {/* Demo Login Tip */}
+            <div style={{ marginBottom:'16px', padding:'12px 16px', background:'rgba(0, 216, 255, 0.08)', border:'1px solid rgba(0, 216, 255, 0.2)', borderRadius:'16px', fontSize:'0.82rem', color:'var(--text-main)', display:'flex', flexDirection:'column', gap:'4px' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:'6px', fontWeight:800, color:'#00D8FF' }}>
+                <span>🔑</span> Demo Presentation Mode
+              </div>
+              <p style={{ color:'var(--text-muted)', margin: 0, fontSize: '0.78rem' }}>
+                Use credentials below to bypass Firebase database setup:
+                <br />
+                Email: <strong>demo@smartride.com</strong> or <strong>bhumanarasimha25@gmail.com</strong>
+                <br />
+                Password: <strong>demo</strong>
+              </p>
+            </div>
+
             {/* Form */}
             <form
               onSubmit={handleLogin}

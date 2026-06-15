@@ -147,6 +147,16 @@ const SignUp = () => {
               </div>
             )}
 
+            {/* Demo Mode Notice */}
+            <div style={{ marginBottom:'16px', padding:'12px 16px', background:'rgba(0, 216, 255, 0.08)', border:'1px solid rgba(0, 216, 255, 0.2)', borderRadius:'16px', fontSize:'0.82rem', color:'var(--text-main)', display:'flex', flexDirection:'column', gap:'4px' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:'6px', fontWeight:800, color:'#00D8FF' }}>
+                <span>🚀</span> Presentation Demo Mode
+              </div>
+              <p style={{ color:'var(--text-muted)', margin: 0, fontSize: '0.78rem' }}>
+                Database or Auth error? Just enter any details and click <strong>Create Account</strong> to automatically log in via Demo Mode.
+              </p>
+            </div>
+
             <form
               onSubmit={handleSubmit}
               style={{ display:'flex', flexDirection:'column', gap:'12px', position:'relative', zIndex:10 }}

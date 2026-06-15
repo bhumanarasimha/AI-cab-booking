@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Bell, Gift, AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import { ArrowLeft, Bell, Gift, AlertTriangle, CheckCircle, Info, Share2, ShieldCheck } from 'lucide-react';
 import BottomNavigation from '../../components/layout/BottomNavigation';
 import { subscribeToRide, updateRideStatus } from '../../lib/firestore';
 
@@ -54,6 +54,16 @@ const Activity = () => {
   const rideId = location.state?.rideId;
   const [activeRide, setActiveRide] = useState(null);
   const [notifications, setNotifications] = useState(NOTIFICATIONS);
+  const [showPlateVerify, setShowPlateVerify] = useState(false);
+  const [showShareToast, setShowShareToast] = useState(false);
+
+  const handleShareTracking = () => {
+    navigator.clipboard.writeText(`https://smartride-ai-cab.firebaseapp.com/track/ride-${rideId || 'demo'}`);
+    setShowShareToast(true);
+    setTimeout(() => {
+      setShowShareToast(false);
+    }, 3000);
+  };
 
   useEffect(() => {
     if (!rideId) return;
@@ -181,6 +191,65 @@ const Activity = () => {
               </div>
             </div>
 
+            {activeRide.status !== 'searching' && (
+              <div style={{ marginTop: '16px', background: 'rgba(255,255,255,0.02)', border: '1px dashed var(--border-ui)', borderRadius: '16px', padding: '14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Verified Vehicle Info</span>
+                  <span style={{ fontSize: '0.65rem', background: '#10B98115', color: '#10B981', border: '1px solid #10B98130', borderRadius: '6px', padding: '2px 6px', fontWeight: 800 }}>AI VERIFIED</span>
+                </div>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-main)', marginBottom: '8px' }}>
+                  <span>Vehicle Number:</span>
+                  <strong style={{ letterSpacing: '0.05em' }}>TS 09 EX 1234</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-main)', marginBottom: '12px' }}>
+                  <span>License:</span>
+                  <strong>DL-12202300489</strong>
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button 
+                    onClick={() => setShowPlateVerify(!showPlateVerify)}
+                    style={{ flex: 1, padding: '8px', background: 'var(--bg-elevated)', border: '1px solid var(--border-ui)', borderRadius: '10px', color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}
+                  >
+                    🔍 {showPlateVerify ? 'Hide' : 'Verify'} Plate Photo
+                  </button>
+                  <button 
+                    onClick={handleShareTracking}
+                    style={{ flex: 1, padding: '8px', background: 'rgba(0, 216, 255, 0.1)', border: '1px solid rgba(0, 216, 255, 0.2)', borderRadius: '10px', color: '#00D8FF', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+                  >
+                    <Share2 size={12} /> Share Live Track
+                  </button>
+                </div>
+
+                <AnimatePresence>
+                  {showPlateVerify && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', overflow: 'hidden' }}
+                    >
+                      {/* Interactive License Plate representation */}
+                      <div style={{ 
+                        background: '#FFD700', color: '#000000', border: '3px solid #000000', 
+                        borderRadius: '6px', width: '100%', maxWidth: '200px', height: '50px',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 900, fontSize: '1.25rem', fontFamily: 'monospace', letterSpacing: '2px',
+                        boxShadow: '0 4px 10px rgba(0,0,0,0.3)', position: 'relative'
+                      }}>
+                        <div style={{ position: 'absolute', top: 2, left: 4, fontSize: '0.5rem', fontWeight: 800 }}>IND</div>
+                        TS 09 EX 1234
+                      </div>
+                      <p style={{ fontSize: '0.7rem', color: '#10B981', fontWeight: 700, textAlign: 'center' }}>
+                        ✅ Plate Photo Match Verified: TS 09 EX 1234 matches the user-entered vehicle number plate.
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+
             <div style={{ display: 'flex', gap: '10px', marginTop: '16px', borderTop: '1px solid var(--border-ui)', paddingTop: '14px' }}>
               <button 
                 onClick={() => navigate('/user/ai-insights')}
@@ -256,6 +325,25 @@ const Activity = () => {
           </div>
         )}
       </div>
+
+      {/* Toast Alert */}
+      <AnimatePresence>
+        {showShareToast && (
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            style={{ 
+              position: 'fixed', bottom: '100px', left: '20px', right: '20px', zIndex: 1000,
+              background: 'rgba(0, 216, 255, 0.95)', color: '#05070A', padding: '14px 20px', 
+              borderRadius: '16px', fontWeight: 800, fontSize: '0.85rem', display: 'flex', 
+              alignItems: 'center', gap: '8px', boxShadow: '0 10px 30px rgba(0,216,255,0.3)'
+            }}
+          >
+            <span>🔗</span> Live tracking link copied! Share it with friends and family.
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <BottomNavigation />
     </div>

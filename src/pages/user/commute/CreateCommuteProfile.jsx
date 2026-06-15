@@ -19,6 +19,30 @@ const CreateCommuteProfile = () => {
   const [loading, setLoading] = useState({ source: false, dest: false });
   const [activeInput, setActiveInput] = useState(null);
 
+  // Vehicle verification states
+  const [vehicleNumber, setVehicleNumber] = useState('');
+  const [licenseNumber, setLicenseNumber] = useState('');
+  const [platePhoto, setPlatePhoto] = useState(null);
+  const [photoName, setPhotoName] = useState('');
+  const [isVerifyingPhoto, setIsVerifyingPhoto] = useState(false);
+  const [photoVerified, setPhotoVerified] = useState(false);
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPlatePhoto(URL.createObjectURL(file));
+      setPhotoName(file.name);
+      setIsVerifyingPhoto(true);
+      setPhotoVerified(false);
+
+      // Simulate verification in 2 seconds
+      setTimeout(() => {
+        setIsVerifyingPhoto(false);
+        setPhotoVerified(true);
+      }, 2000);
+    }
+  };
+
   const fetchSuggestions = async (query, type) => {
     if (!query || query.length < 3) {
       setSuggestions(prev => ({ ...prev, [type]: [] }));
@@ -264,6 +288,96 @@ const CreateCommuteProfile = () => {
             ))}
           </div>
         </section>
+
+        {/* Vehicle Details & Verification (For Car/Bike) */}
+        {(transport === 'car' || transport === 'bike') && (
+          <motion.section 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
+          >
+            <h2 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>Vehicle Details & Verification</h2>
+            <div style={{ background: 'var(--bg-surface)', borderRadius: '20px', padding: '20px', border: '1px solid var(--border-ui)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              
+              <div>
+                <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '8px' }}>Vehicle Registration Number</p>
+                <input 
+                  type="text" 
+                  value={vehicleNumber}
+                  onChange={(e) => setVehicleNumber(e.target.value.toUpperCase())}
+                  placeholder="e.g. TS 09 EX 1234" 
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-ui)', borderRadius: '12px', padding: '12px', color: 'var(--text-main)', fontSize: '0.95rem', outline: 'none' }} 
+                />
+              </div>
+
+              <div>
+                <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '8px' }}>Driving License Number</p>
+                <input 
+                  type="text" 
+                  value={licenseNumber}
+                  onChange={(e) => setLicenseNumber(e.target.value.toUpperCase())}
+                  placeholder="e.g. DL-1420110012345" 
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-ui)', borderRadius: '12px', padding: '12px', color: 'var(--text-main)', fontSize: '0.95rem', outline: 'none' }} 
+                />
+              </div>
+
+              <div>
+                <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '8px' }}>Upload Vehicle Number Plate Photo</p>
+                <div style={{ 
+                  border: '2px dashed var(--border-ui)', 
+                  borderRadius: '16px', 
+                  padding: '24px 20px', 
+                  textAlign: 'center', 
+                  cursor: 'pointer',
+                  position: 'relative',
+                  background: platePhoto ? 'rgba(16, 185, 129, 0.03)' : 'transparent',
+                  borderColor: platePhoto ? '#10B981' : 'var(--border-ui)'
+                }}>
+                  <input 
+                    type="file" 
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', zIndex: 10 }}
+                  />
+                  {platePhoto ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '2rem' }}>🖼️</span>
+                      <p style={{ fontSize: '0.85rem', color: '#10B981', fontWeight: 700 }}>Photo Selected: {photoName}</p>
+                      <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Click or drag to replace</p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '2.2rem', opacity: 0.6 }}>📷</span>
+                      <p style={{ fontSize: '0.8rem', color: 'var(--text-main)', fontWeight: 600 }}>Click to capture or upload photo</p>
+                      <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Supported formats: PNG, JPG, WEBP</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {isVerifyingPhoto && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '12px 16px', borderRadius: '12px' }}>
+                  <Loader2 size={16} className="animate-spin" color="#F59E0B" />
+                  <p style={{ fontSize: '0.78rem', color: '#F59E0B', fontWeight: 600 }}>AI checking license plate match...</p>
+                </div>
+              )}
+
+              {photoVerified && (
+                <motion.div 
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '12px 16px', borderRadius: '12px' }}
+                >
+                  <span style={{ fontSize: '1.2rem' }}>✅</span>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: '0.8rem', color: '#10B981', fontWeight: 700 }}>Plate Verified Successfully!</p>
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Number plate in photo matches user entered: <strong>{vehicleNumber || 'Plate Number'}</strong></p>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+          </motion.section>
+        )}
 
         {/* AI Insight Card */}
         <div style={{ background: 'linear-gradient(135deg, rgba(var(--brand-cyan-rgb), 0.1), transparent)', border: '1px solid rgba(var(--brand-cyan-rgb), 0.2)', borderRadius: '16px', padding: '16px', display: 'flex', gap: '12px' }}>

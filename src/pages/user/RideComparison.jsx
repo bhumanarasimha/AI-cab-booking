@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ChevronRight, Sparkles, Navigation, ShieldCheck, Zap, Clock, Loader2, Train } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Sparkles, Navigation, ShieldCheck, Zap, Clock, Loader2, Train, Bike, Car } from 'lucide-react';
 import RouteMap from '../../components/ui/RouteMap';
 import VehicleLoader from '../../components/ui/VehicleLoader';
 import { useAuth } from '../../lib/AuthContext';
@@ -39,6 +39,7 @@ const RideComparison = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isBooking, setIsBooking] = useState(false);
   const [viewState, setViewState] = useState('select'); // 'select' | 'compare'
+  const [activeCategory, setActiveCategory] = useState('cab4');
   const [selectedComp, setSelectedComp] = useState('smartride');
   const [chatOpen, setChatOpen] = useState(false);
 
@@ -49,12 +50,82 @@ const RideComparison = () => {
 
   const destination = location.state?.dropoff || 'Downtown Metro Station';
 
-  const competitorApps = [
-    { id: 'smartride', name: 'SmartRide AI', price: parseInt(rides.find(r => r.id === selRide)?.price.replace('₹', '') || 0), time: rides.find(r => r.id === selRide)?.time || '0 min', url: null, color: '#00D8FF' },
-    { id: 'rapido', name: 'Rapido Auto', price: 220, time: '25 min', url: 'https://rapido.bike/', color: '#FFD700' },
-    { id: 'uber', name: 'Uber Go', price: 265, time: '26 min', url: 'https://m.uber.com/', color: '#FFFFFF' },
-    { id: 'ola', name: 'Ola Mini', price: 280, time: '28 min', url: 'https://book.olacabs.com/', color: '#A5C933' },
-  ].sort((a, b) => a.price - b.price);
+  const getCompetitors = () => {
+    switch (activeCategory) {
+      case 'bike':
+        return [
+          { id: 'smartride_bike', name: 'SmartRide Bike', price: 55, time: '10 min', url: null, color: '#00D8FF' },
+          { id: 'rapido_bike', name: 'Rapido Bike', price: 60, time: '12 min', url: 'https://rapido.bike/', color: '#FFD700' },
+          { id: 'uber_moto', name: 'Uber Moto', price: 75, time: '14 min', url: 'https://m.uber.com/', color: '#FFFFFF' },
+          { id: 'ola_bike', name: 'Ola Bike', price: 80, time: '15 min', url: 'https://book.olacabs.com/', color: '#A5C933' },
+        ].sort((a, b) => a.price - b.price);
+      case 'scooty':
+        return [
+          { id: 'smartride_scooty', name: 'SmartRide Scooty', price: 30, time: '8 min', url: null, color: '#00D8FF' },
+          { id: 'yulu', name: 'Yulu Miracle', price: 35, time: '10 min', url: 'https://www.yulu.bike/', color: '#00D8FF' },
+          { id: 'vogo', name: 'Vogo Rental', price: 40, time: '13 min', url: 'https://vogo.in/', color: '#FF9500' },
+          { id: 'bounce', name: 'Bounce Share', price: 45, time: '12 min', url: 'https://bounceshare.com/', color: '#FF3B30' },
+        ].sort((a, b) => a.price - b.price);
+      case 'cab4':
+        const basePrice = parseInt(rides.find(r => r.id === selRide)?.price.replace('₹', '') || 210);
+        const baseTime = rides.find(r => r.id === selRide)?.time || '22 min';
+        return [
+          { id: 'smartride', name: rides.find(r => r.id === selRide)?.name || 'SmartRide AI', price: basePrice, time: baseTime, url: null, color: '#00D8FF' },
+          { id: 'rapido', name: 'Rapido Auto', price: 220, time: '25 min', url: 'https://rapido.bike/', color: '#FFD700' },
+          { id: 'uber', name: 'Uber Go', price: 265, time: '26 min', url: 'https://m.uber.com/', color: '#FFFFFF' },
+          { id: 'ola', name: 'Ola Mini', price: 280, time: '28 min', url: 'https://book.olacabs.com/', color: '#A5C933' },
+        ].sort((a, b) => a.price - b.price);
+      case 'cab7':
+        return [
+          { id: 'smartride_xl', name: 'SmartRide XL', price: 380, time: '24 min', url: null, color: '#00D8FF' },
+          { id: 'uber_xl', name: 'Uber XL', price: 450, time: '28 min', url: 'https://m.uber.com/', color: '#FFFFFF' },
+          { id: 'ola_prime', name: 'Ola Prime SUV', price: 480, time: '30 min', url: 'https://book.olacabs.com/', color: '#A5C933' },
+        ].sort((a, b) => a.price - b.price);
+      default:
+        return [];
+    }
+  };
+
+  const competitorApps = getCompetitors();
+
+  useEffect(() => {
+    const apps = getCompetitors();
+    if (apps.length > 0) {
+      const smartRideApp = apps.find(a => a.id.startsWith('smartride'));
+      setSelectedComp(smartRideApp ? smartRideApp.id : apps[0].id);
+    }
+  }, [activeCategory, selRide]);
+
+  const getAiInsight = () => {
+    switch (activeCategory) {
+      case 'bike':
+        return (
+          <>
+            Choosing <strong>SmartRide Bike</strong> saves you <strong>₹5</strong> compared to Rapido Bike and gets you there 2 minutes faster by avoiding traffic.
+          </>
+        );
+      case 'scooty':
+        return (
+          <>
+            Choosing <strong>SmartRide Scooty</strong> saves you <strong>₹5</strong> compared to Yulu Miracle with pre-booked battery assurance.
+          </>
+        );
+      case 'cab4':
+        return (
+          <>
+            Choosing <strong>SmartRide AI</strong> saves you <strong>₹55</strong> by combining a short walk with a direct pickup.
+          </>
+        );
+      case 'cab7':
+        return (
+          <>
+            Choosing <strong>SmartRide XL</strong> saves you <strong>₹70</strong> compared to Uber XL, providing premium 7-seater comfort for your group.
+          </>
+        );
+      default:
+        return null;
+    }
+  };
 
   const confirmLabel = `Confirm ${rides.find(r => r.id === selRide)?.name}`;
 
@@ -210,6 +281,40 @@ const RideComparison = () => {
               </motion.div>
             ) : (
               <motion.div key="compare" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                 {/* Category Tabs */}
+                 <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }} className="no-scrollbar">
+                   {[
+                     { id: 'bike', label: 'Bike', emoji: '🏍️' },
+                     { id: 'scooty', label: 'Scooty', emoji: '🛵' },
+                     { id: 'cab4', label: '4-Seater', emoji: '🚗' },
+                     { id: 'cab7', label: '7-Seater', emoji: '🚐' }
+                   ].map(cat => (
+                     <button
+                       key={cat.id}
+                       onClick={() => setActiveCategory(cat.id)}
+                       style={{
+                         display: 'flex',
+                         alignItems: 'center',
+                         gap: '8px',
+                         padding: '10px 16px',
+                         borderRadius: '14px',
+                         border: activeCategory === cat.id ? '1px solid #00D8FF' : '1px solid var(--border-ui)',
+                         background: activeCategory === cat.id ? 'rgba(0, 216, 255, 0.1)' : 'var(--bg-card)',
+                         color: activeCategory === cat.id ? '#00D8FF' : 'var(--text-muted)',
+                         fontSize: '0.8rem',
+                         fontWeight: 700,
+                         cursor: 'pointer',
+                         whiteSpace: 'nowrap',
+                         transition: 'all 0.2s',
+                         boxShadow: activeCategory === cat.id ? '0 0 15px rgba(0, 216, 255, 0.15)' : 'none'
+                       }}
+                     >
+                       <span style={{ fontSize: '1rem' }}>{cat.emoji}</span>
+                       <span>{cat.label}</span>
+                     </button>
+                   ))}
+                 </div>
+
                  {/* Premium Comparison Grid */}
                  <div style={{ background: 'var(--bg-card)', borderRadius: '24px', border: '1px solid var(--border-ui)', overflow: 'hidden', boxShadow: 'var(--shadow-sm)' }}>
                     {competitorApps.map((comp, idx) => {
@@ -222,7 +327,7 @@ const RideComparison = () => {
                             padding: '20px 24px', 
                             borderBottom: idx !== competitorApps.length - 1 ? '1px solid var(--border-ui)' : 'none',
                             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                            background: isActive ? 'rgba(var(--brand-cyan-rgb), 0.08)' : 'transparent',
+                            background: isActive ? 'rgba(0, 216, 255, 0.08)' : 'transparent',
                             cursor: 'pointer', transition: 'all 0.2s'
                           }}
                         >
@@ -233,10 +338,12 @@ const RideComparison = () => {
                                 border: '1px solid var(--border-ui)',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center'
                               }}>
-                                {comp.id === 'smartride' ? (
+                                {comp.id.startsWith('smartride') ? (
                                   <Zap size={20} color={isActive ? "#05070A" : "var(--brand-cyan)"} />
+                                ) : (activeCategory === 'bike' || activeCategory === 'scooty') ? (
+                                  <Bike size={20} color={isActive ? "#05070A" : "#6B7280"} />
                                 ) : (
-                                  <Navigation size={20} color={isActive ? "#05070A" : "#6B7280"} />
+                                  <Car size={20} color={isActive ? "#05070A" : "#6B7280"} />
                                 )}
                               </div>
                                <div>
@@ -272,7 +379,7 @@ const RideComparison = () => {
                        <h4 style={{ fontSize: '1rem', fontWeight: 900, color: 'var(--text-main)' }}>Ask Chubby</h4>
                     </div>
                     <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                      Choosing <strong>SmartRide AI</strong> saves you <strong>₹55</strong> by combining a short walk with a direct pickup. 
+                      {getAiInsight()}
                       <span style={{ color: '#00D8FF', fontWeight: 700, marginLeft: '6px' }}>View Analysis →</span>
                     </p>
                  </motion.div>
@@ -297,11 +404,11 @@ const RideComparison = () => {
                   else {
                     const target = competitorApps.find(c => c.id === selectedComp);
                     if (target) {
-                      if (target.id === 'smartride') {
+                      if (target.id.startsWith('smartride')) {
                         try {
                           setIsBooking(true);
                           const rideId = await createRideRequest(user.uid, {
-                            rideType: selRide,
+                            rideType: activeCategory === 'cab4' ? selRide : activeCategory,
                             price: target.price,
                             pickup: "Current Location",
                             dropoff: destination,
@@ -321,7 +428,7 @@ const RideComparison = () => {
                 style={{ flex: 1, height: '56px', fontSize: '1.1rem', fontWeight: 900, borderRadius: '18px', gap: '10px', opacity: (isBooking || isLoading) ? 0.7 : 1 }}
               >
                 {(isBooking || isLoading) ? <Loader2 className="animate-spin" size={20} /> : (viewState === 'select' ? confirmLabel : `Book on ${competitorApps.find(c => c.id === selectedComp)?.name}`)}
-                {!(isBooking || isLoading) && (viewState === 'select' ? <ChevronRight size={20} /> : <Navigation size={20} />)}
+                {!(isBooking || isLoading) && (viewState === 'select' ? <ChevronRight size={20} /> : (competitorApps.find(c => c.id === selectedComp)?.id.startsWith('smartride') ? <ChevronRight size={20} /> : <Navigation size={20} />))}
               </motion.button>
             </div>
         </div>
