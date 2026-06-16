@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Bell, Gift, AlertTriangle, CheckCircle, Info, Share2, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Bell, Gift, AlertTriangle, CheckCircle, Info, Share2 } from 'lucide-react';
 import BottomNavigation from '../../components/layout/BottomNavigation';
 import { subscribeToRide, updateRideStatus } from '../../lib/firestore';
 

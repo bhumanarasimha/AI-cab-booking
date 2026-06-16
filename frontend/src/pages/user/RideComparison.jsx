@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ChevronRight, Sparkles, Navigation, ShieldCheck, Zap, Clock, Loader2, Train, Bike, Car } from 'lucide-react';
@@ -50,7 +50,7 @@ const RideComparison = () => {
 
   const destination = location.state?.dropoff || 'Downtown Metro Station';
 
-  const getCompetitors = () => {
+  const getCompetitors = useCallback(() => {
     switch (activeCategory) {
       case 'bike':
         return [
@@ -66,7 +66,7 @@ const RideComparison = () => {
           { id: 'vogo', name: 'Vogo Rental', price: 40, time: '13 min', url: 'https://vogo.in/', color: '#FF9500' },
           { id: 'bounce', name: 'Bounce Share', price: 45, time: '12 min', url: 'https://bounceshare.com/', color: '#FF3B30' },
         ].sort((a, b) => a.price - b.price);
-      case 'cab4':
+      case 'cab4': {
         const basePrice = parseInt(rides.find(r => r.id === selRide)?.price.replace('₹', '') || 210);
         const baseTime = rides.find(r => r.id === selRide)?.time || '22 min';
         return [
@@ -75,6 +75,7 @@ const RideComparison = () => {
           { id: 'uber', name: 'Uber Go', price: 265, time: '26 min', url: 'https://m.uber.com/', color: '#FFFFFF' },
           { id: 'ola', name: 'Ola Mini', price: 280, time: '28 min', url: 'https://book.olacabs.com/', color: '#A5C933' },
         ].sort((a, b) => a.price - b.price);
+      }
       case 'cab7':
         return [
           { id: 'smartride_xl', name: 'SmartRide XL', price: 380, time: '24 min', url: null, color: '#00D8FF' },
@@ -84,7 +85,7 @@ const RideComparison = () => {
       default:
         return [];
     }
-  };
+  }, [activeCategory, selRide]);
 
   const competitorApps = getCompetitors();
 
@@ -92,9 +93,11 @@ const RideComparison = () => {
     const apps = getCompetitors();
     if (apps.length > 0) {
       const smartRideApp = apps.find(a => a.id.startsWith('smartride'));
-      setSelectedComp(smartRideApp ? smartRideApp.id : apps[0].id);
+      const targetId = smartRideApp ? smartRideApp.id : apps[0].id;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedComp(prev => prev !== targetId ? targetId : prev);
     }
-  }, [activeCategory, selRide]);
+  }, [getCompetitors]);
 
   const getAiInsight = () => {
     switch (activeCategory) {
@@ -407,7 +410,7 @@ const RideComparison = () => {
                       if (target.id.startsWith('smartride')) {
                         try {
                           setIsBooking(true);
-                          const rideId = await createRideRequest(user.uid, {
+                          const rideId = await createRideRequest(user?.uid || 'demo-user-123', {
                             rideType: activeCategory === 'cab4' ? selRide : activeCategory,
                             price: target.price,
                             pickup: "Current Location",

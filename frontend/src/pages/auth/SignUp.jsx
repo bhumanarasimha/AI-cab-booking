@@ -17,7 +17,7 @@ const SignUp = () => {
   const navigate  = useNavigate();
   const accent    = '#00D8FF';
 
-  const { registerWithEmail, loginWithGoogle, loginWithFacebook, loginWithApple, sendOtp, confirmOtp } = useAuth();
+  const { registerWithEmail, loginWithGoogle, loginWithFacebook, loginWithApple } = useAuth();
   const [step, setStep] = useState('details'); // 'details' | 'otp'
   const [name, setName]       = useState('');
   const [email, setEmail]     = useState('');

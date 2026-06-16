@@ -20,7 +20,7 @@ export const useGPSLocation = () => {
 
   // Sync state if global location updates
   useEffect(() => {
-    if (currentLocation && (
+    if (currentLocation && currentLocation.coords && location.coords && (
       currentLocation.address !== location.address || 
       currentLocation.coords.lat !== location.coords.lat ||
       currentLocation.coords.lng !== location.coords.lng
@@ -33,7 +33,7 @@ export const useGPSLocation = () => {
         error: null
       });
     }
-  }, [currentLocation, location.address, location.coords.lat, location.coords.lng]);
+  }, [currentLocation, location.address, location.coords?.lat, location.coords?.lng]);
 
   const reverseGeocode = useCallback(async (lat, lng) => {
     const cacheKey = `${lat.toFixed(4)},${lng.toFixed(4)}`;
@@ -185,8 +185,9 @@ export const useGPSLocation = () => {
         const { latitude, longitude, accuracy } = position.coords;
         const currentLoc = locationRef.current;
 
-        const distance = currentLoc.coords ?
-          Math.sqrt(Math.pow(latitude - currentLoc.coords.lat, 2) + Math.pow(longitude - currentLoc.coords.lng, 2)) * 111000 :
+        const currentCoords = currentLoc?.coords;
+        const distance = currentCoords ?
+          Math.sqrt(Math.pow(latitude - currentCoords.lat, 2) + Math.pow(longitude - currentCoords.lng, 2)) * 111000 :
           100;
 
         if (distance > 5 || currentLoc.loading) {

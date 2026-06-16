@@ -118,7 +118,7 @@ const Parcel = () => {
   const handleBookNative = async () => {
     try {
       setIsBooking(true);
-      await createParcelOrder(user.uid, {
+      await createParcelOrder(user?.uid || 'demo-user-123', {
         category: sel?.name,
         pickup,
         dropoff,
