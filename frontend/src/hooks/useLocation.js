@@ -33,7 +33,7 @@ export const useGPSLocation = () => {
         error: null
       });
     }
-  }, [currentLocation, location.address, location.coords?.lat, location.coords?.lng]);
+  }, [currentLocation, location.address, location.coords, location.coords?.lat, location.coords?.lng]);
 
   const reverseGeocode = useCallback(async (lat, lng) => {
     const cacheKey = `${lat.toFixed(4)},${lng.toFixed(4)}`;

@@ -17,7 +17,7 @@ const Login = () => {
   const navigate = useNavigate();
   const accent = '#00D8FF';
 
-  const { user, loading, loginWithGoogle, loginWithFacebook, loginWithApple, loginWithEmail, sendOtp, confirmOtp } = useAuth();
+  const { user, loading, loginWithGoogle, loginWithFacebook, loginWithApple, loginWithEmail, sendOtp, confirmOtp, sendPasswordReset } = useAuth();
   const [method, setMethod] = useState('password'); // 'password' | 'otp'
   const [step, setStep] = useState('entry'); // 'entry' | 'otp-verify'
   const [email, setEmail] = useState('bhumanarasimha25@gmail.com');
@@ -27,6 +27,7 @@ const Login = () => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [timer, setTimer] = useState(0);
 
   useEffect(() => {
@@ -139,6 +140,25 @@ const Login = () => {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError('Please enter your email address in the Email field to reset your password.');
+      setSuccessMsg('');
+      return;
+    }
+    setError('');
+    setSuccessMsg('');
+    setIsLoading(true);
+    try {
+      await sendPasswordReset(email);
+      setSuccessMsg('Password reset email sent successfully! Please check your inbox.');
+    } catch (err) {
+      setError(err.message || 'Failed to send password reset email.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="h-full flex flex-col overflow-y-auto no-scrollbar" style={{ background:'var(--bg-base)', padding:'0 24px' }}>
       {/* Ambient glow */}
@@ -222,6 +242,14 @@ const Login = () => {
               </div>
             )}
 
+            {/* Success Message */}
+            {successMsg && (
+              <div style={{ marginBottom:'16px', padding:'12px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'12px', color:'#10B981', fontSize:'0.85rem', display:'flex', gap:'8px', alignItems:'center' }}>
+                <div style={{ width:'4px', height:'4px', borderRadius:'99px', background:'#10B981' }} />
+                {successMsg}
+              </div>
+            )}
+
             {/* Demo Login Tip */}
             <div style={{ marginBottom:'16px', padding:'12px 16px', background:'rgba(0, 216, 255, 0.08)', border:'1px solid rgba(0, 216, 255, 0.2)', borderRadius:'16px', fontSize:'0.82rem', color:'var(--text-main)', display:'flex', flexDirection:'column', gap:'4px' }}>
               <div style={{ display:'flex', alignItems:'center', gap:'6px', fontWeight:800, color:'#00D8FF' }}>
@@ -286,7 +314,7 @@ const Login = () => {
 
               {method === 'password' && (
                 <div style={{ textAlign:'right' }}>
-                  <button type="button" style={{ fontSize:'0.83rem', color:accent, fontWeight:500, background:'none', border:'none', cursor:'pointer' }}>
+                  <button type="button" onClick={handleForgotPassword} style={{ fontSize:'0.83rem', color:accent, fontWeight:500, background:'none', border:'none', cursor:'pointer' }}>
                     Forgot password?
                   </button>
                 </div>

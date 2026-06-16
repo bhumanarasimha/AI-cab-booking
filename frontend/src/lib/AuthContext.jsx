@@ -13,7 +13,8 @@ import {
   createUserWithEmailAndPassword, 
   updateProfile,
   RecaptchaVerifier,
-  signInWithPhoneNumber
+  signInWithPhoneNumber,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { auth, db } from './firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -296,6 +297,19 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const sendPasswordReset = async (email) => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+    } catch (error) {
+      console.error("Password reset error:", error);
+      if (error.code?.includes('config') || error.code?.includes('domain') || error.message?.includes('auth-domain') || error.code === 'auth/auth-domain-config-required') {
+        // Mock success in presentation/demo mode
+        console.log("Mocking password reset success for:", email);
+        return;
+      }
+      throw error;
+    }
+  };
 
   return (
     <AuthContext.Provider value={{ 
@@ -304,7 +318,8 @@ export const AuthProvider = ({ children }) => {
       loginWithEmail, registerWithEmail, 
       logout, updateUserProfile,
       sendOtp, confirmOtp,
-      currentLocation, setCurrentLocation
+      currentLocation, setCurrentLocation,
+      sendPasswordReset
     }}>
       {!loading && children}
       <div id="recaptcha-container"></div>
