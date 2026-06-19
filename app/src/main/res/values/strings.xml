@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">AI ride Booking</string>
+    <string name="marker_title_hyderabad">Hyderabad</string>
+    <string name="google_maps_key">AIzaSyDZBmGSgFQXoeoNlGpJvu3A4S5p1Zkt3vU</string>
+</resources>
