@@ -441,6 +441,8 @@ const RideComparison = () => {
         onClose={() => setChatOpen(false)} 
         pickup={currentLocation?.address || 'Current Location'} 
         dropoff={destination} 
+        competitors={competitorApps}
+        selectedRide={rides.find(r => r.id === selRide)}
         onSelectTransitMode={(mode = 'transit') => {
           setSelRide(mode);
           setChatOpen(false);
