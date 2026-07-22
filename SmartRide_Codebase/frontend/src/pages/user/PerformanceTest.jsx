@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   ArrowLeft, Play, Square, Activity, CheckCircle2, 
-  XCircle, Clock, Settings, Gauge, AlertCircle, RefreshCw, BarChart2
+  XCircle, Clock, Settings, Gauge, AlertCircle, BarChart2
 } from 'lucide-react';
-import { db } from '../../lib/firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { api } from '../../lib/api';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const PerformanceTest = () => {
@@ -21,7 +20,7 @@ const PerformanceTest = () => {
   // Test execution state
   const [isRunning, setIsRunning] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [vuStates, setVuStates] = useState([]);
+  const [vuStates, setVuStates] = useState(() => Array(100).fill('idle'));
   
   // Metrics
   const [metrics, setMetrics] = useState({
@@ -58,15 +57,13 @@ const PerformanceTest = () => {
   const intervalRef = useRef(null);
   const requestHistoryRef = useRef([]); // tracks timestamp of each request for sliding RPS
 
-  // Initialize VU states
-  useEffect(() => {
-    setVuStates(Array(concurrency).fill('idle'));
-  }, [concurrency]);
-
   // Clean up on unmount
   useEffect(() => {
     return () => {
-      stopTest();
+      isRunningRef.current = false;
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
     };
   }, []);
 
@@ -83,6 +80,7 @@ const PerformanceTest = () => {
     successCountRef.current = 0;
     errorCountRef.current = 0;
     requestHistoryRef.current = [];
+    // eslint-disable-next-line react-hooks/purity
     startTimeRef.current = Date.now();
     
     setMetrics({
@@ -116,10 +114,10 @@ const PerformanceTest = () => {
 
       // Consolidate metrics
       const now = Date.now();
-      const timeElapsed = (now - startTimeRef.current) / 1000;
       
       // Calculate sliding window RPS (requests in the last 2 seconds)
       const recentRequests = requestHistoryRef.current.filter(t => now - t < 2000);
+      const currentRps = Math.round(recentRequests.length / 2);
       
       // Calculate overall latency stats
       const latencies = [...latenciesRef.current].sort((a, b) => a - b);
@@ -149,7 +147,7 @@ const PerformanceTest = () => {
         minLatency: min,
         maxLatency: max,
         avgLatency: avg,
-        currentRps: timeElapsed > 0 ? Math.round(totalSentRef.current / timeElapsed) : 0,
+        currentRps,
         p50,
         p90,
         p99
@@ -160,7 +158,7 @@ const PerformanceTest = () => {
         ...prev,
         {
           second: `${seconds}s`,
-          RPS: timeElapsed > 0 ? Math.round(totalSentRef.current / timeElapsed) : 0,
+          RPS: currentRps,
           Latency: avg
         }
       ]);
@@ -252,8 +250,8 @@ const PerformanceTest = () => {
           isSuccess = Math.random() > 0.015;
         } 
         else if (testType === 'firestore') {
-          // Real Firestore write performance test
-          await addDoc(collection(db, 'performance_test_logs'), {
+          // Real MongoDB write performance test
+          await api.telemetry.logPerformance({
             vuIndex,
             timestamp: Date.now(),
             value: Math.random()
@@ -354,7 +352,7 @@ const PerformanceTest = () => {
                     fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s'
                   }}
                 >
-                  Firestore DB
+                  MongoDB
                 </button>
                 <button 
                   onClick={() => setTestType('custom')} 
@@ -396,7 +394,11 @@ const PerformanceTest = () => {
                 </div>
                 <input 
                   type="range" min="1" max="150" step="5" value={concurrency}
-                  onChange={(e) => setConcurrency(parseInt(e.target.value))}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value);
+                    setConcurrency(val);
+                    setVuStates(Array(val).fill('idle'));
+                  }}
                   disabled={isRunning}
                   style={{ width: '100%', accentColor: 'var(--brand-cyan)' }}
                 />

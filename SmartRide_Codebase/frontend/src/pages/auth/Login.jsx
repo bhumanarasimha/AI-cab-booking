@@ -256,7 +256,7 @@ const Login = () => {
                 <span>🔑</span> Demo Presentation Mode
               </div>
               <p style={{ color:'var(--text-muted)', margin: 0, fontSize: '0.78rem' }}>
-                Use credentials below to bypass Firebase database setup:
+                Use credentials below to log in directly via the MongoDB backend:
                 <br />
                 Email: <strong>demo@smartride.com</strong> or <strong>bhumanarasimha25@gmail.com</strong>
                 <br />

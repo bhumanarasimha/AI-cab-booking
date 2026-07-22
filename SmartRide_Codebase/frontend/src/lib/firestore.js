@@ -1,27 +1,12 @@
-import { db } from './firebase';
-import {
-  collection, addDoc, serverTimestamp, updateDoc, doc, onSnapshot,
-  query, where, orderBy, getDocs, arrayUnion
-} from 'firebase/firestore';
+/* eslint-disable no-unused-vars */
+import { api } from './api';
+import { subscribeToRideUpdates, subscribeToChatUpdates } from './socket';
 
 // RIDES
 export const createRideRequest = async (userId, rideData) => {
   try {
-    const docRef = await addDoc(collection(db, 'rides'), {
-      userId,
-      ...rideData,
-      status: 'searching',
-      aiInsights: {
-        latency: Math.floor(Math.random() * 20) + 10,
-        confidence: 0.95 + (Math.random() * 0.04),
-        agents: 14,
-        hewro: { walkingReduced: 240, effortSaved: 34 },
-        stability: { road: 92, vehicle: 98, route: 87 }
-      },
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
-    return docRef.id;
+    const data = await api.rides.create(rideData);
+    return data._id || data.id;
   } catch (error) {
     console.error("Error creating ride:", error);
     throw error;
@@ -30,46 +15,25 @@ export const createRideRequest = async (userId, rideData) => {
 
 // USER PROFILE & PREFERENCES
 export const updateUserPreferences = async (userId, preferences) => {
-  const userRef = doc(db, 'users', userId);
-  await updateDoc(userRef, {
-    preferences,
-    updatedAt: serverTimestamp()
-  });
+  await api.users.updateProfile({ preferences });
 };
 
 export const updateSavedPlaces = async (userId, savedPlaces) => {
-  const userRef = doc(db, 'users', userId);
-  await updateDoc(userRef, {
-    savedPlaces,
-    updatedAt: serverTimestamp()
-  });
+  await api.users.updateProfile({ savedPlaces });
 };
 
 export const updateEmergencyContacts = async (userId, emergencyContacts) => {
-  const userRef = doc(db, 'users', userId);
-  await updateDoc(userRef, {
-    emergencyContacts,
-    updatedAt: serverTimestamp()
-  });
+  await api.users.updateProfile({ emergencyContacts });
 };
 
 export const updateCommuteProfile = async (userId, commuteProfile) => {
-  const userRef = doc(db, 'users', userId);
-  await updateDoc(userRef, {
-    commuteProfile,
-    updatedAt: serverTimestamp()
-  });
+  await api.users.updateProfile({ commuteProfile });
 };
 
 export const getUserRides = async (userId) => {
   try {
-    const q = query(
-      collection(db, 'rides'),
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const data = await api.rides.list();
+    return data.map(item => ({ id: item._id || item.id, ...item }));
   } catch (error) {
     console.error("Error fetching rides:", error);
     throw error;
@@ -77,23 +41,14 @@ export const getUserRides = async (userId) => {
 };
 
 export const updateRideStatus = async (rideId, status) => {
-  const rideRef = doc(db, 'rides', rideId);
-  await updateDoc(rideRef, {
-    status,
-    updatedAt: serverTimestamp()
-  });
+  await api.rides.updateStatus(rideId, status);
 };
 
 // PARCELS
 export const createParcelOrder = async (userId, parcelData) => {
   try {
-    const docRef = await addDoc(collection(db, 'parcels'), {
-      userId,
-      ...parcelData,
-      status: 'pending',
-      createdAt: serverTimestamp()
-    });
-    return docRef.id;
+    const data = await api.parcels.create(parcelData);
+    return data._id || data.id;
   } catch (error) {
     console.error("Error creating parcel:", error);
     throw error;
@@ -102,23 +57,14 @@ export const createParcelOrder = async (userId, parcelData) => {
 
 // REAL-TIME UPDATES
 export const subscribeToRide = (rideId, callback) => {
-  return onSnapshot(doc(db, 'rides', rideId), (doc) => {
-    callback({ id: doc.id, ...doc.data() });
-  });
+  return subscribeToRideUpdates(rideId, callback);
 };
 
 // CHATS
 export const createChatSession = async (userId, targetUserId) => {
   try {
-    const docRef = await addDoc(collection(db, 'chats'), {
-      participants: [userId, targetUserId],
-      lastMessage: "Interested in sharing tomorrow's commute?",
-      updatedAt: serverTimestamp(),
-      messages: [
-        { text: "Hey! Saw we have a 94% route overlap. Interested in sharing tomorrow's commute?", senderId: targetUserId, timestamp: new Date() }
-      ]
-    });
-    return docRef.id;
+    const data = await api.chats.create(targetUserId);
+    return data._id || data.id;
   } catch (error) {
     console.error("Error creating chat session:", error);
     throw error;
@@ -126,22 +72,9 @@ export const createChatSession = async (userId, targetUserId) => {
 };
 
 export const subscribeToChat = (chatId, callback) => {
-  return onSnapshot(doc(db, 'chats', chatId), (doc) => {
-    if (doc.exists()) {
-      callback({ id: doc.id, ...doc.data() });
-    }
-  });
+  return subscribeToChatUpdates(chatId, callback);
 };
 
 export const sendChatMessage = async (chatId, senderId, text) => {
-  const chatRef = doc(db, 'chats', chatId);
-  await updateDoc(chatRef, {
-    messages: arrayUnion({
-      text,
-      senderId,
-      timestamp: new Date()
-    }),
-    lastMessage: text,
-    updatedAt: serverTimestamp()
-  });
+  await api.chats.sendMessage(chatId, text);
 };
