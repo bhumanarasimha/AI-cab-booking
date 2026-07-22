@@ -74,6 +74,9 @@ const signToken = (userId) => {
 app.post('/api/auth/register', async (req, res) => {
   const { email, password, name } = req.body;
   try {
+    if (password && password.length < 6) {
+      return res.status(400).json({ msg: 'Password must be at least 6 characters long' });
+    }
     let user = await User.findOne({ email });
     if (user) {
       return res.status(400).json({ msg: 'User already exists' });
