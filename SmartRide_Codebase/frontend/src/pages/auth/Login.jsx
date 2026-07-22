@@ -20,9 +20,9 @@ const Login = () => {
   const { user, loading, loginWithGoogle, loginWithFacebook, loginWithApple, loginWithEmail, sendOtp, confirmOtp, sendPasswordReset } = useAuth();
   const [method, setMethod] = useState('password'); // 'password' | 'otp'
   const [step, setStep] = useState('entry'); // 'entry' | 'otp-verify'
-  const [email, setEmail] = useState('bhumanarasimha25@gmail.com');
+  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('demo');
+  const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
@@ -102,7 +102,6 @@ const Login = () => {
     setIsLoading(true);
     try {
       await loginWithGoogle();
-      // If redirect, this code won't run. If popup, it will.
       navigate('/user/welcome');
     } catch (err) {
       if (err.code !== 'auth/cancelled-popup-request') {
@@ -249,20 +248,6 @@ const Login = () => {
                 {successMsg}
               </div>
             )}
-
-            {/* Demo Login Tip */}
-            <div style={{ marginBottom:'16px', padding:'12px 16px', background:'rgba(0, 216, 255, 0.08)', border:'1px solid rgba(0, 216, 255, 0.2)', borderRadius:'16px', fontSize:'0.82rem', color:'var(--text-main)', display:'flex', flexDirection:'column', gap:'4px' }}>
-              <div style={{ display:'flex', alignItems:'center', gap:'6px', fontWeight:800, color:'#00D8FF' }}>
-                <span>🔑</span> Demo Presentation Mode
-              </div>
-              <p style={{ color:'var(--text-muted)', margin: 0, fontSize: '0.78rem' }}>
-                Use credentials below to log in directly via the MongoDB backend:
-                <br />
-                Email: <strong>demo@smartride.com</strong> or <strong>bhumanarasimha25@gmail.com</strong>
-                <br />
-                Password: <strong>demo</strong>
-              </p>
-            </div>
 
             {/* Form */}
             <form

@@ -28,8 +28,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'smartride_jwt_secret_key';
 const setupDemoUsers = async () => {
   try {
     const usersToCreate = [
-      { email: 'demo@smartride.com', name: 'Demo User' },
-      { email: 'bhumanarasimha25@gmail.com', name: 'Bhumana Narasimha' }
+      { email: 'demo@smartride.com', name: 'Demo User', password: 'demo' },
+      { email: 'bhumanarasimha25@gmail.com', name: 'Bhumana Narasimha', password: 'demo' },
+      { email: 'nameisvenkat2005@gmail.com', name: 'Venkat', password: '123456' }
     ];
 
     for (const item of usersToCreate) {
@@ -39,7 +40,7 @@ const setupDemoUsers = async () => {
           user = new User({
             email: item.email,
             name: item.name,
-            password: 'demo',
+            password: item.password || 'demo',
             preferences: { theme: 'dark', language: 'en' },
             savedPlaces: [
               { name: 'Home', address: '123 Tech Park, Phase 1' },
@@ -50,7 +51,7 @@ const setupDemoUsers = async () => {
             ]
           });
           await user.save();
-          console.log(`[MongoDB] Demo user ${item.email} created successfully`);
+          console.log(`[MongoDB] User ${item.email} created successfully`);
         }
       } else {
         let user = await inMemoryStore.findUserByEmail(item.email);
@@ -58,9 +59,9 @@ const setupDemoUsers = async () => {
           await inMemoryStore.createUser({
             email: item.email,
             name: item.name,
-            password: 'demo'
+            password: item.password || 'demo'
           });
-          console.log(`[InMemoryDB] Demo user ${item.email} created successfully`);
+          console.log(`[InMemoryDB] User ${item.email} created successfully`);
         }
       }
     }
