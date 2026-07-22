@@ -25,17 +25,21 @@ const TypingDots = () => (
   </div>
 );
 
-
-
 /* ─── Sub-components ─── */
-const MultiOptionCard = ({ onChipClick }) => {
+const MultiOptionCard = ({ onChipClick, context }) => {
+  const transitPrice = context?.transitPrice || 46;
+  const autoPrice = context?.autoPrice || 98;
+  const cabPrice = context?.cabPrice || 140;
+  const estMinutes = context?.estMinutes || 24;
+  const savings = context?.savings || 94;
+
   const options = [
     {
       label: 'Metro + Bike',
       icon: Train,
-      time: '32 min',
-      price: '₹46',
-      save: 'Save ₹94',
+      time: `${estMinutes + 8} min`,
+      price: `₹${transitPrice}`,
+      save: `Save ₹${savings}`,
       saveColor: '#10B981',
       tag: 'Cheapest',
       tagColor: '#10B981',
@@ -45,24 +49,24 @@ const MultiOptionCard = ({ onChipClick }) => {
     {
       label: 'Auto Ride',
       icon: Car,
-      time: '24 min',
-      price: '₹98',
-      save: 'Save ₹42',
+      time: `${estMinutes} min`,
+      price: `₹${autoPrice}`,
+      save: `Save ₹${Math.max(20, cabPrice - autoPrice)}`,
       saveColor: '#F59E0B',
-      tag: 'Fastest',
+      tag: 'Popular',
       tagColor: '#F59E0B',
       steps: ['Direct pickup'],
       accent: '#F59E0B',
     },
     {
-      label: 'Cab (UberGo)',
+      label: 'Cab (SmartRide / UberGo)',
       icon: Car,
-      time: '21 min',
-      price: '₹140',
+      time: `${Math.max(12, estMinutes - 4)} min`,
+      price: `₹${cabPrice}`,
       save: null,
-      tag: 'Premium',
+      tag: 'Fastest',
       tagColor: 'var(--brand-indigo)',
-      steps: ['AC · 4 seats'],
+      steps: ['AC · Direct ride'],
       accent: 'var(--brand-indigo)',
     },
   ];
@@ -70,7 +74,7 @@ const MultiOptionCard = ({ onChipClick }) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
       <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--brand-cyan)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '2px' }}>
-        ✦ Multi-Option Comparison
+        ✦ Multi-Option Route Comparison
       </div>
       {options.map((opt, idx) => {
         const Icon = opt.icon;
@@ -128,26 +132,28 @@ const MultiOptionCard = ({ onChipClick }) => {
         );
       })}
       <div style={{ padding: '8px 12px', background: 'rgba(16, 185, 129, 0.06)', border: '1px solid rgba(16, 185, 129, 0.15)', borderRadius: '10px', fontSize: '0.72rem', color: '#10B981', display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <Leaf size={12} /> Metro + Bike saves ₹94 · 12% less CO₂ than solo cab
+        <Leaf size={12} /> Metro + Bike saves ₹{savings} · 12% less CO₂ than solo cab
       </div>
     </div>
   );
 };
 
 const SmartRouteCard = ({ onChipClick, context }) => {
-  const metroName = context?.metroName || 'Anna Nagar West Metro';
-  const lineName = context?.lineName || 'Green Line';
-  const finalDest = context?.finalDest || 'Koyambedu';
+  const metroName = context?.metroName || 'Nearest Metro Station';
+  const lineName = context?.lineName || 'Main Transit Line';
+  const finalDest = context?.finalDest || context?.dropoff || 'destination';
+  const transitPrice = context?.transitPrice || 46;
+
   return (
     <div style={{ marginTop: '10px' }}>
       <div style={{ background: 'rgba(0, 216, 255, 0.06)', border: '1px solid rgba(0, 216, 255, 0.15)', borderRadius: '14px', padding: '14px', marginBottom: '8px' }}>
         <div style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--brand-cyan)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '8px' }}>
-          🗺 Optimised Route
+          🗺 Optimised Route Plan
         </div>
         {[
           { icon: Footprints, color: '#10B981', label: 'Walk 300m', sub: `to ${metroName}`, time: '4 min', savings: 'Free' },
-          { icon: Train, color: '#6366F1', label: `${lineName} (4 stops)`, sub: `Metro to ${finalDest}`, time: '18 min', savings: '₹22' },
-          { icon: Bike, color: '#F59E0B', label: 'Bike (1.2 km)', sub: 'Yulu Bike to destination', time: '8 min', savings: '₹24' },
+          { icon: Train, color: '#6366F1', label: `${lineName}`, sub: `Metro to ${finalDest}`, time: '18 min', savings: `₹${Math.round(transitPrice * 0.5)}` },
+          { icon: Bike, color: '#F59E0B', label: 'Bike / Scooter (1.2 km)', sub: 'Last mile connection', time: '6 min', savings: `₹${Math.round(transitPrice * 0.5)}` },
         ].map((step, i, arr) => (
           <div key={i}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
@@ -190,14 +196,15 @@ const SmartRouteCard = ({ onChipClick, context }) => {
   );
 };
 
-const PriceForecastCard = ({ onChipClick }) => {
+const PriceForecastCard = ({ onChipClick, context }) => {
+  const basePrice = context?.autoPrice || 98;
   const hours = [
-    { time: 'Now', price: 98, surge: false },
-    { time: '30m', price: 142, surge: true },
-    { time: '1h', price: 160, surge: true },
-    { time: '1.5h', price: 110, surge: false },
-    { time: '2h', price: 95, surge: false },
-    { time: '3h', price: 88, surge: false },
+    { time: 'Now', price: basePrice, surge: false },
+    { time: '30m', price: Math.round(basePrice * 1.45), surge: true },
+    { time: '1h', price: Math.round(basePrice * 1.6), surge: true },
+    { time: '1.5h', price: Math.round(basePrice * 1.1), surge: false },
+    { time: '2h', price: Math.round(basePrice * 0.95), surge: false },
+    { time: '3h', price: Math.round(basePrice * 0.88), surge: false },
   ];
   const max = Math.max(...hours.map(h => h.price));
 
@@ -243,48 +250,56 @@ const PriceForecastCard = ({ onChipClick }) => {
         </div>
       </div>
       <div style={{ padding: '10px 12px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '10px', fontSize: '0.75rem', color: '#10B981', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-        <Zap size={13} /> Book NOW at ₹98 — price jumps 45% in 30 min!
+        <Zap size={13} /> Book NOW at ₹{basePrice} — price jumps 45% in 30 min!
       </div>
       <motion.button
         onClick={() => onChipClick('Book cheapest')}
         whileTap={{ scale: 0.96 }}
         style={{ width: '100%', background: 'linear-gradient(135deg, #10B981, #059669)', borderRadius: '10px', padding: '11px', fontSize: '0.82rem', fontWeight: 700, color: '#fff', cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
       >
-        <DollarSign size={14} /> Lock price at ₹98 now
+        <DollarSign size={14} /> Lock price at ₹{basePrice} now
       </motion.button>
     </div>
   );
 };
 
-const RouteDetailCard = ({ onChipClick }) => (
-  <div style={{ marginTop: '10px' }}>
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', marginBottom: '10px' }}>
-      {[
-        { label: 'Total Cost', value: '₹46', sub: 'vs ₹140 cab', color: '#10B981' },
-        { label: 'Total Time', value: '32 min', sub: '3 min slower', color: '#F59E0B' },
-        { label: 'CO₂ Saved', value: '2.4 kg', sub: 'eco trip', color: 'var(--brand-cyan)' },
-      ].map((m, i) => (
-        <div key={i} style={{ background: `${m.color}08`, border: `1px solid ${m.color}20`, borderRadius: '10px', padding: '10px 8px', textAlign: 'center' }}>
-          <div style={{ fontSize: '1rem', fontWeight: 900, color: m.color }}>{m.value}</div>
-          <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-main)', marginTop: '2px' }}>{m.label}</div>
-          <div style={{ fontSize: '0.55rem', color: 'var(--text-muted)' }}>{m.sub}</div>
-        </div>
-      ))}
+const RouteDetailCard = ({ onChipClick, context }) => {
+  const transitPrice = context?.transitPrice || 46;
+  const cabPrice = context?.cabPrice || 140;
+  const estMinutes = context?.estMinutes || 24;
+
+  return (
+    <div style={{ marginTop: '10px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', marginBottom: '10px' }}>
+        {[
+          { label: 'Total Cost', value: `₹${transitPrice}`, sub: `vs ₹${cabPrice} cab`, color: '#10B981' },
+          { label: 'Total Time', value: `${estMinutes + 6} min`, sub: '3 min slower', color: '#F59E0B' },
+          { label: 'CO₂ Saved', value: `${((context?.distanceKm || 8) * 0.15).toFixed(1)} kg`, sub: 'eco trip', color: 'var(--brand-cyan)' },
+        ].map((m, i) => (
+          <div key={i} style={{ background: `${m.color}08`, border: `1px solid ${m.color}20`, borderRadius: '10px', padding: '10px 8px', textAlign: 'center' }}>
+            <div style={{ fontSize: '1rem', fontWeight: 900, color: m.color }}>{m.value}</div>
+            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-main)', marginTop: '2px' }}>{m.label}</div>
+            <div style={{ fontSize: '0.55rem', color: 'var(--text-muted)' }}>{m.sub}</div>
+          </div>
+        ))}
+      </div>
+      <motion.button
+        onClick={() => onChipClick('Book cheapest')}
+        whileTap={{ scale: 0.96 }}
+        style={{ width: '100%', background: 'linear-gradient(135deg, #10B981, #059669)', borderRadius: '10px', padding: '11px', fontSize: '0.82rem', fontWeight: 700, color: '#fff', cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+      >
+        <Train size={14} /> Book Metro + Bike combo
+      </motion.button>
     </div>
-    <motion.button
-      onClick={() => onChipClick('Book cheapest')}
-      whileTap={{ scale: 0.96 }}
-      style={{ width: '100%', background: 'linear-gradient(135deg, #10B981, #059669)', borderRadius: '10px', padding: '11px', fontSize: '0.82rem', fontWeight: 700, color: '#fff', cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-    >
-      <Train size={14} /> Book Metro + Bike combo
-    </motion.button>
-  </div>
-);
+  );
+};
 
 const WalkRouteCard = ({ context }) => {
-  const metroName = context?.metroName || 'Anna Nagar West Metro';
+  const metroName = context?.metroName || 'Nearest Metro Station';
   const lineName = context?.lineName || 'Green Line';
-  const finalDest = context?.finalDest || 'Koyambedu';
+  const finalDest = context?.finalDest || context?.dropoff || 'destination';
+  const savings = context?.savings || 94;
+
   return (
     <div style={{ marginTop: '10px' }}>
       <div style={{ background: 'rgba(16, 185, 129, 0.06)', border: '1px solid rgba(16, 185, 129, 0.15)', borderRadius: '14px', padding: '12px' }}>
@@ -298,7 +313,7 @@ const WalkRouteCard = ({ context }) => {
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.72rem', color: '#10B981', fontWeight: 700 }}>
-          <ArrowRight size={12} /> Then take the {lineName} (4 stops) → {finalDest}
+          <ArrowRight size={12} /> Then take the {lineName} → {finalDest} (Saves ₹{savings})
         </div>
       </div>
       <div style={{ padding: '8px 12px', background: 'rgba(99, 102, 241, 0.08)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: '10px', fontSize: '0.72rem', color: 'var(--brand-indigo)', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -308,22 +323,25 @@ const WalkRouteCard = ({ context }) => {
   );
 };
 
-const BookedCard = () => (
-  <div style={{ marginTop: '10px' }}>
-    <motion.div
-      initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.12), rgba(16,185,129,0.04))', border: '1px solid rgba(16,185,129,0.25)', borderRadius: '16px', padding: '16px', textAlign: 'center' }}
-    >
-      <div style={{ fontSize: '2rem', marginBottom: '6px' }}>🎉</div>
-      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#10B981', marginBottom: '4px' }}>Fare Locked!</div>
-      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Auto confirmed · ₹98 for 15 min</div>
-      <div style={{ marginTop: '10px', padding: '8px', background: 'var(--bg-elevated)', borderRadius: '10px', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-        Driver arriving in <span style={{ color: 'var(--brand-cyan)', fontWeight: 700 }}>3.2 min</span> · KL01 AX 2345
-      </div>
-    </motion.div>
-  </div>
-);
+const BookedCard = ({ context }) => {
+  const autoPrice = context?.autoPrice || 98;
+  return (
+    <div style={{ marginTop: '10px' }}>
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.12), rgba(16,185,129,0.04))', border: '1px solid rgba(16,185,129,0.25)', borderRadius: '16px', padding: '16px', textAlign: 'center' }}
+      >
+        <div style={{ fontSize: '2rem', marginBottom: '6px' }}>🎉</div>
+        <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#10B981', marginBottom: '4px' }}>Fare Locked & Confirmed!</div>
+        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Ride locked at ₹{autoPrice} for 15 min</div>
+        <div style={{ marginTop: '10px', padding: '8px', background: 'var(--bg-elevated)', borderRadius: '10px', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+          Driver arriving in <span style={{ color: 'var(--brand-cyan)', fontWeight: 700 }}>2.8 min</span> · KL01 AX 2345
+        </div>
+      </motion.div>
+    </div>
+  );
+};
 
 const TransitComparisonCard = ({ onSelectTransitMode, context }) => {
   const city = context?.city || 'local';
@@ -343,7 +361,7 @@ const TransitComparisonCard = ({ onSelectTransitMode, context }) => {
             name: 'Chennai Metro (CMRL)',
             route: `Take Green/Blue Line from ${context?.metroName || 'Anna Nagar West'} to ${context?.finalDest || 'Koyambedu'}`,
             time: '25 min',
-            cost: '₹40',
+            cost: `₹${context?.transitPrice || 40}`,
             frequency: 'Every 7 mins',
             details: 'Direct air-conditioned high-speed rail route. Perfect for avoiding highway bottlenecks.',
             accent: '#00D8FF',
@@ -376,7 +394,7 @@ const TransitComparisonCard = ({ onSelectTransitMode, context }) => {
             name: 'Hyderabad Metro (HMRL)',
             route: `Take Red/Blue Line from ${context?.metroName || 'Ameerpet'} to ${context?.finalDest || 'Secunderabad'}`,
             time: '20 min',
-            cost: '₹45',
+            cost: `₹${context?.transitPrice || 45}`,
             frequency: 'Every 5 mins',
             details: 'Fastest elevated transit corridor. Fully air-conditioned.',
             accent: '#00D8FF',
@@ -409,7 +427,7 @@ const TransitComparisonCard = ({ onSelectTransitMode, context }) => {
             name: 'Namma Metro (BMRCL)',
             route: `Take Purple Line from ${context?.metroName || 'Indiranagar'} to ${context?.finalDest || 'Majestic'}`,
             time: '22 min',
-            cost: '₹40',
+            cost: `₹${context?.transitPrice || 40}`,
             frequency: 'Every 6 mins',
             details: 'Best way to bypass Central Business District road congestion completely.',
             accent: '#00D8FF',
@@ -442,7 +460,7 @@ const TransitComparisonCard = ({ onSelectTransitMode, context }) => {
             name: 'Delhi Metro (DMRC)',
             route: `Take Yellow Line from ${context?.metroName || 'Rajiv Chowk'} to ${context?.finalDest || 'Connaught Place'}`,
             time: '25 min',
-            cost: '₹40',
+            cost: `₹${context?.transitPrice || 40}`,
             frequency: 'Every 3 mins',
             details: 'Ultra-frequent, fully air-conditioned underground network.',
             accent: '#00D8FF',
@@ -485,7 +503,7 @@ const TransitComparisonCard = ({ onSelectTransitMode, context }) => {
             name: 'Mumbai Metro (Line 1/2A/7)',
             route: `Take Blue Line 1 Metro from ${context?.metroName || 'Andheri'} to junction`,
             time: '15 min',
-            cost: '₹30',
+            cost: `₹${context?.transitPrice || 30}`,
             frequency: 'Every 5 mins',
             details: 'Air-conditioned elevated rail line connecting East and West suburbs.',
             accent: '#00D8FF',
@@ -502,130 +520,33 @@ const TransitComparisonCard = ({ onSelectTransitMode, context }) => {
           },
         ];
       default:
-        return null;
+        return [
+          {
+            type: 'Metro',
+            name: 'City Rapid Transit / Metro',
+            route: `Take Metro / Express transit to ${context?.finalDest || dropoff}`,
+            time: `${context?.estMinutes || 25} min`,
+            cost: `₹${context?.transitPrice || 35}`,
+            frequency: 'Every 8 mins',
+            details: 'Rapid transit route bypassing city road traffic.',
+            accent: '#00D8FF',
+          },
+          {
+            type: 'Bus',
+            name: 'Local City Express Bus',
+            route: 'Walk to nearest bus stop → Express City Bus to destination',
+            time: `${(context?.estMinutes || 25) + 15} min`,
+            cost: '₹15 - ₹30',
+            frequency: 'Every 12 mins',
+            details: 'Economical road transit option.',
+            accent: '#10B981',
+          },
+        ];
     }
-  }, [city, context]);
+  }, [city, context, dropoff]);
 
   const [activeTab, setActiveTab] = useState(transitData?.[0]?.type || 'Metro');
   const activeData = useMemo(() => transitData?.find(t => t.type === activeTab), [transitData, activeTab]);
-
-  if (city === 'local' || !transitData) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '12px' }}>
-        <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#EF4444', letterSpacing: '0.12em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span>⚠️ No Public Transit Mapped</span>
-        </div>
-
-        <div style={{
-          background: 'rgba(239, 68, 68, 0.05)',
-          border: '1px solid rgba(239, 68, 68, 0.15)',
-          borderRadius: '16px',
-          padding: '16px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '8px',
-        }}>
-          <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-main)' }}>Transit Search Result</h4>
-          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.45 }}>
-            Public transit networks (Metro, Bus, Train) are currently unavailable or not fully mapped from your location to <strong>{dropoff}</strong>.
-          </p>
-        </div>
-
-        {/* Suggestion 1: Take a Cab */}
-        <div style={{
-          background: 'linear-gradient(135deg, rgba(0, 216, 255, 0.06), transparent)',
-          border: '1px solid rgba(0, 216, 255, 0.2)',
-          borderRadius: '16px',
-          padding: '16px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px'
-        }}>
-          <div>
-            <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--brand-cyan)', letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>Recommended Option</span>
-            <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              🚗 Book a Cab or Auto
-            </h4>
-            <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px', lineHeight: 1.4 }}>
-              Cabs are fully active in this region. Fast pickups, air-conditioned rides, and live ETA tracking.
-            </p>
-          </div>
-          <motion.button
-            onClick={() => {
-              if (onSelectTransitMode) onSelectTransitMode('smart');
-            }}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
-            style={{
-              background: 'linear-gradient(135deg, var(--brand-indigo), var(--brand-cyan))',
-              border: 'none',
-              borderRadius: '10px',
-              padding: '10px',
-              color: 'white',
-              fontSize: '0.75rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              boxShadow: '0 4px 12px rgba(99,102,241,0.2)'
-            }}
-          >
-            <Car size={13} /> View Cab Options
-          </motion.button>
-        </div>
-
-        {/* Suggestion 2: Commuter Matches or create one */}
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.03)',
-          border: '1px solid var(--border-ui)',
-          borderRadius: '16px',
-          padding: '16px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px'
-        }}>
-          <div>
-            <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>Rideshare Alternative</span>
-            <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              👥 Carpool & Commute Pool
-            </h4>
-            <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px', lineHeight: 1.4 }}>
-              Share rides with verified local office-goers to save money and reduce emissions on daily trips.
-            </p>
-          </div>
-
-          <motion.button
-            onClick={() => {
-              window.location.hash = '#/user/commute/create-profile';
-              setTimeout(() => {
-                window.location.reload();
-              }, 100);
-            }}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
-            style={{
-              background: 'transparent',
-              border: '1px solid var(--border-ui)',
-              borderRadius: '10px',
-              padding: '10px',
-              color: 'var(--text-main)',
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px'
-            }}
-          >
-            <Plus size={13} color="var(--brand-cyan)" /> Create Commuter Profile
-          </motion.button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
@@ -735,89 +656,6 @@ const TransitComparisonCard = ({ onSelectTransitMode, context }) => {
       >
         <Navigation size={14} /> Prefer Public Transit & View on Map
       </motion.button>
-
-      {/* Commuter/Carpool Match Suggestions */}
-      <div style={{ marginTop: '6px', borderTop: '1px solid var(--border-ui)', paddingTop: '12px' }}>
-        {cityMatches.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ fontSize: '0.68rem', fontWeight: 800, color: 'var(--brand-cyan)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>👥 Verified Commute Matches ({cityMatches.length})</span>
-            </div>
-            {cityMatches.map((match) => (
-              <div
-                key={match.id}
-                style={{
-                  background: 'var(--bg-elevated)',
-                  border: '1px solid var(--border-ui)',
-                  borderRadius: '14px',
-                  padding: '10px 12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                }}
-              >
-                <div style={{ position: 'relative' }}>
-                  <img src={match.image} alt={match.name} style={{ width: '36px', height: '36px', borderRadius: '10px', objectFit: 'cover' }} />
-                  {match.verified && (
-                    <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', background: 'var(--brand-cyan)', borderRadius: '50%', padding: '2px', border: '1px solid var(--bg-surface)' }}>
-                      <ShieldCheck size={8} color="white" />
-                    </div>
-                  )}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{match.name}</span>
-                    <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#10B981', background: 'rgba(16,185,129,0.08)', padding: '1px 5px', borderRadius: '4px' }}>{match.overlap} Match</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2px' }}>
-                    <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{match.company} · {match.startTime}</span>
-                    <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--brand-cyan)', cursor: 'pointer' }} onClick={() => {
-                      window.location.hash = '#/user/commute/results';
-                      setTimeout(() => window.location.reload(), 100);
-                    }}>Connect →</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div style={{
-            background: 'rgba(255,255,255,0.01)',
-            border: '1px dashed var(--border-ui)',
-            borderRadius: '14px',
-            padding: '12px',
-            textAlign: 'center',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '6px'
-          }}>
-            <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-              💡 Save up to ₹4,500/month by carpooling with coworkers in {city}!
-            </p>
-            <motion.button
-              onClick={() => {
-                window.location.hash = '#/user/commute/create-profile';
-                setTimeout(() => window.location.reload(), 100);
-              }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              style={{
-                background: 'rgba(99,102,241,0.08)',
-                border: '1px solid rgba(99,102,241,0.2)',
-                borderRadius: '8px',
-                padding: '6px 12px',
-                color: 'var(--brand-indigo)',
-                fontSize: '0.7rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                alignSelf: 'center'
-              }}
-            >
-              Setup Ride Matching
-            </motion.button>
-          </div>
-        )}
-      </div>
     </div>
   );
 };
@@ -866,7 +704,7 @@ const ChatMessage = ({ msg, onChipClick, context, onSelectTransitMode }) => {
       <div style={{ maxWidth: isBot ? '88%' : '78%' }}>
         {isBot && (
           <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--brand-cyan)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '4px' }}>
-            AI Assistant
+            Chubby AI Assistant
           </div>
         )}
         <div style={{
@@ -925,17 +763,23 @@ const ChatMessage = ({ msg, onChipClick, context, onSelectTransitMode }) => {
 /* ─── Main AIChatBot Component ─── */
 const AIChatBot = ({ isOpen, onClose, pickup = 'Current Location', dropoff = 'your destination', onSelectTransitMode }) => {
   const context = useMemo(() => {
-    const city = pickup.toLowerCase().includes('chennai') || pickup.toLowerCase().includes('tamil nadu') ? 'Chennai' :
-                 pickup.toLowerCase().includes('hyderabad') || pickup.toLowerCase().includes('telangana') ? 'Hyderabad' :
-                 pickup.toLowerCase().includes('bengaluru') || pickup.toLowerCase().includes('bangalore') || pickup.toLowerCase().includes('karnataka') ? 'Bengaluru' :
-                 pickup.toLowerCase().includes('delhi') ? 'Delhi' :
-                 pickup.toLowerCase().includes('mumbai') || pickup.toLowerCase().includes('maharashtra') ? 'Mumbai' : 'local';
+    const cleanPickup = pickup || 'Current Location';
+    const cleanDropoff = dropoff || 'your destination';
+
+    const pLower = cleanPickup.toLowerCase();
+    const dLower = cleanDropoff.toLowerCase();
+
+    const city = (pLower.includes('chennai') || dLower.includes('chennai') || pLower.includes('tn') || dLower.includes('tamil nadu')) ? 'Chennai' :
+                 (pLower.includes('hyderabad') || dLower.includes('hyderabad') || pLower.includes('telangana')) ? 'Hyderabad' :
+                 (pLower.includes('bengaluru') || dLower.includes('bengaluru') || pLower.includes('bangalore') || pLower.includes('karnataka')) ? 'Bengaluru' :
+                 (pLower.includes('delhi') || dLower.includes('delhi') || pLower.includes('ncr')) ? 'Delhi' :
+                 (pLower.includes('mumbai') || dLower.includes('mumbai') || pLower.includes('maharashtra')) ? 'Mumbai' : 'local';
 
     const metroName = city === 'Chennai' ? 'Anna Nagar West Metro' :
                       city === 'Hyderabad' ? 'Ameerpet Metro Station' :
                       city === 'Bengaluru' ? 'Indiranagar Metro Station' :
                       city === 'Delhi' ? 'Rajiv Chowk Metro Station' :
-                      city === 'Mumbai' ? 'Andheri Station' : 'Closest Transit Station';
+                      city === 'Mumbai' ? 'Andheri Station' : 'Closest Transit Hub';
 
     const lineName = city === 'Chennai' ? 'Green Line' :
                      city === 'Hyderabad' ? 'Red Line' :
@@ -947,17 +791,48 @@ const AIChatBot = ({ isOpen, onClose, pickup = 'Current Location', dropoff = 'yo
                       city === 'Hyderabad' ? 'Secunderabad' :
                       city === 'Bengaluru' ? 'Majestic' :
                       city === 'Delhi' ? 'Connaught Place' :
-                      city === 'Mumbai' ? 'Dadar' : 'your destination';
+                      city === 'Mumbai' ? 'Dadar' : cleanDropoff;
 
-    return { pickup, dropoff, city, metroName, lineName, finalDest };
+    // Dynamic distance and price estimates derived from pickup and dropoff strings
+    const strConcat = cleanPickup + cleanDropoff;
+    let hash = 0;
+    for (let i = 0; i < strConcat.length; i++) {
+      hash = (hash << 5) - hash + strConcat.charCodeAt(i);
+      hash |= 0;
+    }
+    const absHash = Math.abs(hash);
+    const distanceKm = Number((5 + (absHash % 120) / 10).toFixed(1)); // e.g. 5.0 to 17.0 km
+
+    const cabPrice = Math.round(50 + distanceKm * 14);
+    const autoPrice = Math.round(35 + distanceKm * 9);
+    const transitPrice = Math.min(55, Math.round(15 + distanceKm * 3.2));
+    const bikePrice = Math.round(25 + distanceKm * 6);
+    const estMinutes = Math.round(distanceKm * 2.2 + 8);
+    const savings = cabPrice - transitPrice;
+
+    return {
+      pickup: cleanPickup,
+      dropoff: cleanDropoff,
+      city,
+      metroName,
+      lineName,
+      finalDest,
+      distanceKm,
+      cabPrice,
+      autoPrice,
+      transitPrice,
+      bikePrice,
+      estMinutes,
+      savings,
+    };
   }, [pickup, dropoff]);
 
   const dynamicInitialMessage = useMemo(() => ({
     id: 0,
     type: 'bot',
-    text: `Good Afternoon! 👋 I'm Chubby AI, your travel assistant. I see you are traveling to **${dropoff}**! I can help you find routes, compare options, and save money on this journey.`,
+    text: `Hello! 👋 I'm **Chubby AI**, your intelligent travel assistant. I see your route is **${context.pickup}** ➔ **${context.dropoff}** (~${context.distanceKm} km).\n\nHow can I assist your journey today?`,
     chips: ['Compare prices', 'Smart routes', 'Public Transit', 'Future prices'],
-  }), [dropoff]);
+  }), [context]);
 
   const [messages, setMessages] = useState([dynamicInitialMessage]);
   const [inputValue, setInputValue] = useState('');
@@ -977,35 +852,42 @@ const AIChatBot = ({ isOpen, onClose, pickup = 'Current Location', dropoff = 'yo
   const chatFlows = useMemo(() => {
     return {
       'Compare prices': {
-        text: `Here are the best options for your current route to **${dropoff}**:`,
+        text: `Here is the real-time price comparison for your route to **${context.dropoff}** (${context.distanceKm} km):`,
         component: 'multi_option',
+        chips: ['Smart routes', 'Public Transit', 'Future prices'],
       },
       'Smart routes': {
-        text: `I found a smarter route to **${dropoff}** that saves you ₹94 and 8 minutes! 🎯`,
+        text: `I found an optimized multimodal route to **${context.dropoff}** that saves you **₹${context.savings}** and avoids highway traffic! 🎯`,
         component: 'smart_route',
+        chips: ['Walk 300m', 'Compare prices', 'Public Transit'],
       },
       'Public Transit': {
-        text: `I searched for public transportation options to **${dropoff}**. Here is the breakdown for Metro, Bus, and Local Trains:`,
+        text: `Here is the public transportation breakdown for **${context.city}** along your route to **${context.dropoff}**:`,
         component: 'transit_compare',
+        chips: ['Metro + Bike', 'Smart routes', 'Compare prices'],
       },
       'Future prices': {
-        text: "Based on traffic patterns and demand forecast, here's how prices will change today:",
+        text: `Based on current demand and traffic flow on the way to **${context.dropoff}**, here is the 3-hour price forecast:`,
         component: 'price_forecast',
+        chips: ['Book cheapest', 'Compare prices', 'Public Transit'],
       },
       'Metro + Bike': {
-        text: `Great choice! Connecting via local transit saves you **₹94** compared to a direct cab to **${dropoff}**. Here's your step-by-step plan:`,
+        text: `Great choice! Connecting via transit to **${context.dropoff}** costs just **₹${context.transitPrice}** (saving **₹${context.savings}** vs cab). Here is your step-by-step itinerary:`,
         component: 'route_detail',
+        chips: ['Book cheapest', 'Walk 300m', 'Compare prices'],
       },
       'Book cheapest': {
-        text: "I'll lock in this fare for the next **15 minutes** ⏱️. Auto ride booked!",
+        text: `I'll lock in this fare of **₹${context.autoPrice}** for the next **15 minutes** ⏱️. Auto ride confirmed!`,
         component: 'booked',
+        chips: ['Smart routes', 'Compare prices'],
       },
       'Walk 300m': {
-        text: `Walking 300m to **${context.metroName}** gets you a **₹94 cheaper ride**. Here's the optimised plan:`,
+        text: `Walking 300m to **${context.metroName}** saves you **₹${context.savings}**. Here is the walking direction:`,
         component: 'walk_route',
+        chips: ['Metro + Bike', 'Compare prices'],
       },
     };
-  }, [context, dropoff]);
+  }, [context]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -1033,11 +915,10 @@ const AIChatBot = ({ isOpen, onClose, pickup = 'Current Location', dropoff = 'yo
           chips: flow.chips,
         },
       ]);
-    }, 900);
+    }, 800);
   }, []);
 
   const handleChipClick = useCallback((chip) => {
-    // Add user bubble
     setMessages(prev => [...prev, { id: Date.now(), type: 'user', text: chip }]);
     const flow = chatFlows[chip];
     if (flow) {
@@ -1051,13 +932,14 @@ const AIChatBot = ({ isOpen, onClose, pickup = 'Current Location', dropoff = 'yo
           {
             id: Date.now(),
             type: 'bot',
-            text: "Let me check that for you... Here are your best options:",
+            text: `Checking details for **"${chip}"** on your route to **${context.dropoff}**… Here are your optimal choices:`,
             component: 'multi_option',
+            chips: ['Compare prices', 'Public Transit', 'Future prices'],
           },
         ]);
-      }, 900);
+      }, 800);
     }
-  }, [addBotMessage, chatFlows]);
+  }, [addBotMessage, chatFlows, context]);
 
   const handleSend = useCallback(() => {
     if (!inputValue.trim()) return;
@@ -1068,22 +950,71 @@ const AIChatBot = ({ isOpen, onClose, pickup = 'Current Location', dropoff = 'yo
     setIsTyping(true);
     setTimeout(() => {
       setIsTyping(false);
-      const lowerText = text.toLowerCase();
+      const lower = text.toLowerCase();
       let response;
-      if (lowerText.includes('cheap') || lowerText.includes('price') || lowerText.includes('cost')) {
-        response = { text: `I found the cheapest option for your route! Connecting via transit to **${dropoff}** costs just ₹46 🎯`, component: 'multi_option' };
-      } else if (lowerText.includes('fast') || lowerText.includes('quick') || lowerText.includes('urgent')) {
-        response = { text: `Fastest route available — direct cab to **${dropoff}** in **21 min**. Want me to book now?`, component: 'price_forecast' };
-      } else if (lowerText.includes('metro') || lowerText.includes('train') || lowerText.includes('bus') || lowerText.includes('public') || lowerText.includes('transit') || lowerText.includes('local train')) {
-        response = { text: `I searched for public transportation options to **${dropoff}**. Here is the breakdown for Metro, Bus, and Local Trains in your area:`, component: 'transit_compare' };
-      } else if (lowerText.includes('bike')) {
-        response = { text: `Here's the optimal Smart route for your trip to **${dropoff}**:`, component: 'smart_route' };
+
+      if (lower.includes('cheap') || lower.includes('price') || lower.includes('cost') || lower.includes('fare') || lower.includes('amount') || lower.includes('rate')) {
+        response = {
+          text: `I analyzed all pricing tiers from **${context.pickup}** to **${dropoff}** (${context.distanceKm} km):\n\n• **Public Transit / Metro**: **₹${context.transitPrice}** (Cheapest 🟢)\n• **Auto Ride**: **₹${context.autoPrice}**\n• **Cab (SmartRide)**: **₹${context.cabPrice}**\n\nYou save **₹${context.savings}** by taking the Metro + Bike combo!`,
+          component: 'multi_option',
+          chips: ['Book cheapest', 'Smart routes', 'Future prices']
+        };
+      } else if (lower.includes('fast') || lower.includes('quick') || lower.includes('urgent') || lower.includes('time') || lower.includes('duration') || lower.includes('long') || lower.includes('speed')) {
+        response = {
+          text: `⚡ **Fastest Transit Option**:\nDirect Cab to **${dropoff}** takes only **~${Math.max(12, context.estMinutes - 4)} minutes**. Traffic along this ${context.distanceKm} km corridor is clear!`,
+          component: 'price_forecast',
+          chips: ['Book cheapest', 'Compare prices', 'Smart routes']
+        };
+      } else if (lower.includes('metro') || lower.includes('train') || lower.includes('bus') || lower.includes('public') || lower.includes('transit') || lower.includes('local train')) {
+        response = {
+          text: `🚇 **Public Transit Breakdown for ${context.city}**:\nConnecting via **${context.metroName}** to **${context.finalDest}** costs just **₹${context.transitPrice}**!`,
+          component: 'transit_compare',
+          chips: ['Metro + Bike', 'Smart routes', 'Compare prices']
+        };
+      } else if (lower.includes('surge') || lower.includes('later') || lower.includes('peak') || lower.includes('forecast') || lower.includes('traffic')) {
+        response = {
+          text: `📈 **Fare & Traffic Forecast**:\nRight now fare is **₹${context.autoPrice}**. In 30 minutes, demand peak will push prices up to **₹${Math.round(context.autoPrice * 1.45)}**. We recommend booking now!`,
+          component: 'price_forecast',
+          chips: ['Book cheapest', 'Compare prices', 'Public Transit']
+        };
+      } else if (lower.includes('bike') || lower.includes('walk') || lower.includes('scooter') || lower.includes('last mile')) {
+        response = {
+          text: `🚲 **Multimodal Last-Mile Route**:\nCombine a 4-min walk (300m) with Metro and Yulu Bike to reach **${dropoff}** for **₹${context.transitPrice}**!`,
+          component: 'smart_route',
+          chips: ['Walk 300m', 'Compare prices', 'Book cheapest']
+        };
+      } else if (lower.includes('safe') || lower.includes('safety') || lower.includes('sos') || lower.includes('emergency') || lower.includes('tracking') || lower.includes('pin')) {
+        response = {
+          text: `🛡️ **SmartRide AI Safety Guarantee**:\n• **24/7 AI Shield**: Continuous GPS anomaly monitoring\n• **4-Digit Secure PIN**: Ride only starts after verification\n• **Instant SOS & Live Share**: Share location with family with 1 tap.`,
+          chips: ['Compare prices', 'Smart routes', 'Public Transit']
+        };
+      } else if (lower.includes('pay') || lower.includes('payment') || lower.includes('upi') || lower.includes('cash') || lower.includes('card') || lower.includes('wallet') || lower.includes('offer') || lower.includes('coupon') || lower.includes('promo')) {
+        response = {
+          text: `💳 **Payment & Offers**:\n• We accept **UPI (GPay, PhonePe), Cards, Wallet & Cash**.\n• Use code **\`SMART20\`** for 20% OFF your ride to **${dropoff}**!\n• 100% instant refund policy if ride is cancelled by driver.`,
+          chips: ['Compare prices', 'Book cheapest', 'Future prices']
+        };
+      } else if (lower.includes('driver') || lower.includes('pickup') || lower.includes('where') || lower.includes('track') || lower.includes('eta') || lower.includes('arriving')) {
+        response = {
+          text: `📍 **Pickup & Driver Info**:\nYour pickup is set at **${context.pickup}**. Nearby drivers are available with an average arrival time of **~2.8 minutes**.`,
+          chips: ['Book cheapest', 'Compare prices', 'Smart routes']
+        };
+      } else if (lower.includes('share') || lower.includes('pool') || lower.includes('carpool') || lower.includes('commute')) {
+        response = {
+          text: `👥 **SmartRide Carpool & Commute**:\nSave up to **60%** by matching with verified office commuters heading towards **${dropoff}**!`,
+          component: 'transit_compare',
+          chips: ['Public Transit', 'Compare prices', 'Smart routes']
+        };
       } else {
-        response = { text: `Sure! Here are all available travel options to reach **${dropoff}**:`, component: 'multi_option', chips: ['Future prices', 'Smart routes', 'Public Transit'] };
+        response = {
+          text: `I'm Chubby AI! For your trip from **${context.pickup}** to **${dropoff}** (~${context.distanceKm} km), here are all your personalized travel choices:`,
+          component: 'multi_option',
+          chips: ['Compare prices', 'Smart routes', 'Public Transit', 'Future prices']
+        };
       }
+
       setMessages(prev => [...prev, { id: Date.now(), type: 'bot', ...response }]);
-    }, 1000);
-  }, [inputValue, dropoff]);
+    }, 900);
+  }, [inputValue, dropoff, context]);
 
   return (
     <AnimatePresence>
@@ -1151,7 +1082,7 @@ const AIChatBot = ({ isOpen, onClose, pickup = 'Current Location', dropoff = 'yo
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.01em' }}>Chubby AI</h3>
-                    <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--brand-cyan)', background: 'rgba(var(--brand-cyan-rgb), 0.1)', border: '1px solid rgba(var(--brand-cyan-rgb), 0.2)', padding: '1px 6px', borderRadius: '4px', letterSpacing: '0.08em' }}>BETA</span>
+                    <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--brand-cyan)', background: 'rgba(var(--brand-cyan-rgb), 0.1)', border: '1px solid rgba(var(--brand-cyan-rgb), 0.2)', padding: '1px 6px', borderRadius: '4px', letterSpacing: '0.08em' }}>SMART AI</span>
                   </div>
                   <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Chubby AI travel assistant · Always on</p>
                 </div>
@@ -1257,7 +1188,7 @@ const AIChatBot = ({ isOpen, onClose, pickup = 'Current Location', dropoff = 'yo
                   value={inputValue}
                   onChange={e => setInputValue(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleSend()}
-                  placeholder="Type or ask anything…"
+                  placeholder="Ask Chubby AI about fares, fast routes, safety..."
                   style={{
                     flex: 1,
                     background: 'transparent',
