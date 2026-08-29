@@ -6,13 +6,15 @@ import { SmartRideProvider } from '../providers/SmartRideProvider';
 import { normalizeRideData } from '../normalization/normalizeRideData';
 import { EMMDEDecisionEngine } from '../agents/EMMDEDecisionEngine';
 
+const DEFAULT_CONTEXT = { weather: 'clear', urgency: 'normal' };
+
 export const useRideRefreshEngine = ({
   origin,
   destination,
   activeCategory = 'cab4',
   userPreferences = 'balanced',
   refreshIntervalMs = 10000,
-  contextInputs = { weather: 'clear', urgency: 'normal' },
+  contextInputs = DEFAULT_CONTEXT,
 }) => {
   const [rawRideOptions, setRawRideOptions] = useState([]);
   const [processedResult, setProcessedResult] = useState({
@@ -27,6 +29,11 @@ export const useRideRefreshEngine = ({
   const [secondsAgo, setSecondsAgo] = useState(0);
 
   const previousOptionsRef = useRef(new Map());
+
+  const originLat = origin?.lat;
+  const originLng = origin?.lng;
+  const weather = contextInputs?.weather || 'clear';
+  const urgency = contextInputs?.urgency || 'normal';
 
   const fetchAndProcess = useCallback(async (isManualTrigger = false) => {
     if (isManualTrigger) {
@@ -67,7 +74,7 @@ export const useRideRefreshEngine = ({
       const decisionResult = EMMDEDecisionEngine.process({
         rideOptions: categoryFiltered.length > 0 ? categoryFiltered : normalizedList,
         userPreferences,
-        contextInputs,
+        contextInputs: { weather, urgency },
       });
 
       setProcessedResult(decisionResult);
@@ -77,7 +84,8 @@ export const useRideRefreshEngine = ({
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [origin, destination, isLiveMode, activeCategory, userPreferences, contextInputs]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [originLat, originLng, destination, isLiveMode, activeCategory, userPreferences, weather, urgency]);
 
   useEffect(() => {
     fetchAndProcess();
@@ -95,12 +103,15 @@ export const useRideRefreshEngine = ({
 
   useEffect(() => {
     const ticker = setInterval(() => {
-      const diffSec = Math.max(0, Math.floor((new Date() - lastUpdatedTime) / 1000));
-      setSecondsAgo(diffSec);
+      setLastUpdatedTime(prev => {
+        const diffSec = Math.max(0, Math.floor((new Date() - prev) / 1000));
+        setSecondsAgo(diffSec);
+        return prev;
+      });
     }, 1000);
 
     return () => clearInterval(ticker);
-  }, [lastUpdatedTime]);
+  }, []);
 
   return {
     rawRideOptions,

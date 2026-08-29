@@ -6,13 +6,15 @@ import { SmartRideProvider } from '../providers/SmartRideProvider';
 import { normalizeRideData } from '../normalization/normalizeRideData';
 import { EMMDEDecisionEngine } from '../agents/EMMDEDecisionEngine';
 
+const DEFAULT_CONTEXT = { weather: 'clear', urgency: 'normal' };
+
 export const useRideRefreshEngine = ({
   origin,
   destination,
   activeCategory = 'cab4',
   userPreferences = 'balanced',
-  refreshIntervalMs = 10000, // Default 10 seconds
-  contextInputs = { weather: 'clear', urgency: 'normal' },
+  refreshIntervalMs = 10000,
+  contextInputs = DEFAULT_CONTEXT,
 }) => {
   const [rawRideOptions, setRawRideOptions] = useState([]);
   const [processedResult, setProcessedResult] = useState({
@@ -22,11 +24,16 @@ export const useRideRefreshEngine = ({
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isLiveMode, setIsLiveMode] = useState(false); // Toggleable DEMO vs LIVE mode
+  const [isLiveMode, setIsLiveMode] = useState(false);
   const [lastUpdatedTime, setLastUpdatedTime] = useState(new Date());
   const [secondsAgo, setSecondsAgo] = useState(0);
 
   const previousOptionsRef = useRef(new Map());
+
+  const originLat = origin?.lat;
+  const originLng = origin?.lng;
+  const weather = contextInputs?.weather || 'clear';
+  const urgency = contextInputs?.urgency || 'normal';
 
   const fetchAndProcess = useCallback(async (isManualTrigger = false) => {
     if (isManualTrigger) {
@@ -34,7 +41,6 @@ export const useRideRefreshEngine = ({
     }
 
     try {
-      // 1. Fetch raw data from all provider adapters concurrently
       const [uberData, olaData, rapidoData, smartData] = await Promise.all([
         UberProvider.fetchOptions({ origin, destination, isLiveMode }),
         OlaProvider.fetchOptions({ origin, destination, isLiveMode }),
@@ -45,7 +51,6 @@ export const useRideRefreshEngine = ({
       const allRaw = [...uberData, ...olaData, ...rapidoData, ...smartData];
       setRawRideOptions(allRaw);
 
-      // 2. Normalize data and compute deltas
       const now = new Date();
       const newPrevMap = new Map();
 
@@ -62,16 +67,14 @@ export const useRideRefreshEngine = ({
       setLastUpdatedTime(now);
       setSecondsAgo(0);
 
-      // 3. Filter by active category if not 'all'
       const categoryFiltered = activeCategory === 'all' 
         ? normalizedList 
         : normalizedList.filter(o => o.category === activeCategory);
 
-      // 4. Run EMMDE Multi-Agent Decision Engine
       const decisionResult = EMMDEDecisionEngine.process({
         rideOptions: categoryFiltered.length > 0 ? categoryFiltered : normalizedList,
         userPreferences,
-        contextInputs,
+        contextInputs: { weather, urgency },
       });
 
       setProcessedResult(decisionResult);
@@ -81,7 +84,9 @@ export const useRideRefreshEngine = ({
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [origin, destination, isLiveMode, activeCategory, userPreferences, contextInputs]);
+  // Use primitive values in dependency array to eliminate infinite re-render loops
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [originLat, originLng, destination, isLiveMode, activeCategory, userPreferences, weather, urgency]);
 
   // Initial fetch & refetch on parameter change
   useEffect(() => {
@@ -102,12 +107,15 @@ export const useRideRefreshEngine = ({
   // Second ticker for "Updated X sec ago" indicator
   useEffect(() => {
     const ticker = setInterval(() => {
-      const diffSec = Math.max(0, Math.floor((new Date() - lastUpdatedTime) / 1000));
-      setSecondsAgo(diffSec);
+      setLastUpdatedTime(prev => {
+        const diffSec = Math.max(0, Math.floor((new Date() - prev) / 1000));
+        setSecondsAgo(diffSec);
+        return prev;
+      });
     }, 1000);
 
     return () => clearInterval(ticker);
-  }, [lastUpdatedTime]);
+  }, []);
 
   return {
     rawRideOptions,
