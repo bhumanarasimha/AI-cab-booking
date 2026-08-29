@@ -1,32 +1,71 @@
+import { View, StyleSheet, Dimensions } from 'react-native';
 import { Outlet } from 'react-router-dom';
 
 const MobileContainer = () => (
-  <div
-    className="min-h-screen flex items-center justify-center"
-    style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(var(--brand-indigo-rgb), 0.08) 0%, #040608 60%)' }}
-  >
-    <div
-      className="relative overflow-hidden flex flex-col"
-      style={{
-        width: '100%',
-        maxWidth: '390px',
-        height: '100dvh',
-        maxHeight: '844px',
-        background: 'var(--bg-base)',
-        borderRadius: window.innerWidth > 640 ? '48px' : '0',
-        boxShadow: window.innerWidth > 640 ? '0 0 0 10px #0A0D16, 0 40px 80px rgba(0,0,0,0.8)' : 'none',
-      }}
-    >
-      {/* Notch bar for desktop preview */}
-      <div className="hidden sm:flex absolute top-0 inset-x-0 h-7 z-50 justify-center pt-2 pointer-events-none">
-        <div style={{ width: '120px', height: '20px', background: '#0A0D16', borderRadius: '0 0 16px 16px' }} />
+  <div style={styles.outerWrapper}>
+    <div style={styles.phoneFrame}>
+      {/* Notch bar for desktop framing */}
+      <div style={styles.notchContainer}>
+        <div style={styles.notch} />
       </div>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar w-full h-full">
+      <div style={styles.contentArea}>
         <Outlet />
       </div>
     </div>
   </div>
 );
+
+const styles = {
+  outerWrapper: {
+    display: 'flex',
+    minHeight: '100vh',
+    width: '100vw',
+    backgroundColor: '#040608',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  phoneFrame: {
+    width: '100%',
+    maxWidth: '430px',
+    height: '100vh',
+    maxHeight: '920px',
+    backgroundColor: '#080C14',
+    overflow: 'hidden',
+    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    boxShadow: '0 25px 60px rgba(0,0,0,0.8)',
+    border: '1px solid rgba(255,255,255,0.08)',
+  },
+  notchContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '24px',
+    zIndex: 9999,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    pointerEvents: 'none',
+  },
+  notch: {
+    width: '120px',
+    height: '18px',
+    backgroundColor: '#1A2340',
+    borderBottomLeftRadius: '14px',
+    borderBottomRightRadius: '14px',
+  },
+  contentArea: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+  },
+};
 
 export default MobileContainer;
