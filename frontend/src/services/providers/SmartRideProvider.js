@@ -6,14 +6,14 @@ export const SmartRideProvider = {
   fetchOptions: async ({ origin, destination }) => {
     const distKm = calculateRouteDistanceKm(origin, destination);
 
-    const transitFare = Math.min(45, Math.max(20, Math.round(15 + distKm * 1.0)));
+    const transitFare = Math.min(65, Math.max(25, Math.round(20 + distKm * 1.1)));
 
     return [
       {
         rawProvider: 'SmartRide AI',
         type: 'SmartRide Bike',
         category: 'bike',
-        cost: computeRealtimeFare({ baseFare: 18, ratePerKm: 6.0, distanceKm: distKm }),
+        cost: computeRealtimeFare({ provider: 'SmartRide AI', type: 'SmartRide Bike', baseFare: 25, ratePerKm: 9.8, distanceKm: distKm }),
         currency: '₹',
         durationMin: computeRealtimeEta(distKm, 'bike'),
         pickupMeters: 140,
@@ -27,7 +27,7 @@ export const SmartRideProvider = {
         rawProvider: 'SmartRide AI',
         type: 'SmartRide Auto',
         category: 'auto',
-        cost: computeRealtimeFare({ baseFare: 28, ratePerKm: 10.0, distanceKm: distKm }),
+        cost: computeRealtimeFare({ provider: 'SmartRide AI', type: 'SmartRide Auto', baseFare: 45, ratePerKm: 13.2, distanceKm: distKm }),
         currency: '₹',
         durationMin: computeRealtimeEta(distKm, 'auto'),
         pickupMeters: 90,
@@ -41,7 +41,7 @@ export const SmartRideProvider = {
         rawProvider: 'SmartRide AI',
         type: 'SmartRide AI (Cab+Metro)',
         category: 'cab4',
-        cost: computeRealtimeFare({ baseFare: 40, ratePerKm: 12.0, distanceKm: distKm }),
+        cost: computeRealtimeFare({ provider: 'SmartRide AI', type: 'SmartRide Cab+Metro', baseFare: 40, ratePerKm: 11.5, distanceKm: distKm }),
         currency: '₹',
         durationMin: computeRealtimeEta(distKm, 'cab4'),
         pickupMeters: 130,
@@ -55,7 +55,7 @@ export const SmartRideProvider = {
         rawProvider: 'SmartRide AI',
         type: 'SmartRide XL',
         category: 'cab7',
-        cost: computeRealtimeFare({ baseFare: 80, ratePerKm: 22.0, distanceKm: distKm }),
+        cost: computeRealtimeFare({ provider: 'SmartRide AI', type: 'SmartRide XL', baseFare: 150, ratePerKm: 28.0, distanceKm: distKm }),
         currency: '₹',
         durationMin: computeRealtimeEta(distKm, 'cab7'),
         pickupMeters: 180,
