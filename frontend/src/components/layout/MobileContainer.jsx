@@ -3,11 +3,6 @@ import { Outlet } from 'react-router-dom';
 const MobileContainer = () => (
   <div style={styles.outerWrapper}>
     <div style={styles.phoneFrame}>
-      {/* Subtle compact camera island at top that never overlaps buttons */}
-      <div style={styles.cameraIsland}>
-        <div style={styles.cameraDot} />
-      </div>
-
       <div style={styles.contentArea}>
         <Outlet />
       </div>
@@ -18,47 +13,28 @@ const MobileContainer = () => (
 const styles = {
   outerWrapper: {
     display: 'flex',
-    minHeight: '100vh',
+    height: '100vh',
     width: '100vw',
     backgroundColor: '#040608',
     alignItems: 'center',
-    justify: 'center',
+    justifyContent: 'center',
     overflow: 'hidden',
+    padding: '16px',
+    boxSizing: 'border-box',
   },
   phoneFrame: {
     width: '100%',
-    maxWidth: '430px',
-    height: '100vh',
-    maxHeight: '920px',
+    maxWidth: '410px',
+    height: '100%',
+    maxHeight: '860px',
     backgroundColor: '#080C14',
-    overflow: 'hidden',
+    borderRadius: '36px',
+    border: '1px solid rgba(255, 255, 255, 0.12)',
+    boxShadow: '0 25px 80px rgba(0, 0, 0, 0.9), 0 0 40px rgba(0, 216, 255, 0.1)',
     position: 'relative',
     display: 'flex',
     flexDirection: 'column',
-    boxShadow: '0 25px 60px rgba(0,0,0,0.8)',
-    border: '1px solid rgba(255,255,255,0.08)',
-  },
-  cameraIsland: {
-    position: 'absolute',
-    top: 6,
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: '60px',
-    height: '8px',
-    backgroundColor: '#1A2340',
-    borderRadius: '6px',
-    zIndex: 9999,
-    display: 'flex',
-    alignItems: 'center',
-    justify: 'center',
-    pointerEvents: 'none',
-  },
-  cameraDot: {
-    width: '4px',
-    height: '4px',
-    borderRadius: '2px',
-    backgroundColor: '#00D8FF',
-    opacity: 0.6,
+    overflow: 'hidden',
   },
   contentArea: {
     flex: 1,
@@ -67,6 +43,7 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     overflow: 'hidden',
+    position: 'relative',
   },
 };
 
