@@ -1,12 +1,11 @@
-import { View, StyleSheet, Dimensions } from 'react-native';
 import { Outlet } from 'react-router-dom';
 
 const MobileContainer = () => (
   <div style={styles.outerWrapper}>
     <div style={styles.phoneFrame}>
-      {/* Notch bar for desktop framing */}
-      <div style={styles.notchContainer}>
-        <div style={styles.notch} />
+      {/* Subtle compact camera island at top that never overlaps buttons */}
+      <div style={styles.cameraIsland}>
+        <div style={styles.cameraDot} />
       </div>
 
       <div style={styles.contentArea}>
@@ -23,7 +22,7 @@ const styles = {
     width: '100vw',
     backgroundColor: '#040608',
     alignItems: 'center',
-    justifyContent: 'center',
+    justify: 'center',
     overflow: 'hidden',
   },
   phoneFrame: {
@@ -39,24 +38,27 @@ const styles = {
     boxShadow: '0 25px 60px rgba(0,0,0,0.8)',
     border: '1px solid rgba(255,255,255,0.08)',
   },
-  notchContainer: {
+  cameraIsland: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '24px',
+    top: 6,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: '60px',
+    height: '8px',
+    backgroundColor: '#1A2340',
+    borderRadius: '6px',
     zIndex: 9999,
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
+    justify: 'center',
     pointerEvents: 'none',
   },
-  notch: {
-    width: '120px',
-    height: '18px',
-    backgroundColor: '#1A2340',
-    borderBottomLeftRadius: '14px',
-    borderBottomRightRadius: '14px',
+  cameraDot: {
+    width: '4px',
+    height: '4px',
+    borderRadius: '2px',
+    backgroundColor: '#00D8FF',
+    opacity: 0.6,
   },
   contentArea: {
     flex: 1,

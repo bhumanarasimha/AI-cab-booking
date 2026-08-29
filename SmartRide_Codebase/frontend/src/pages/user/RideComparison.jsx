@@ -26,14 +26,6 @@ const PREFERENCE_FILTERS = [
   { id: 'effort', label: 'Lowest Effort', emoji: '🚶‍♂️' },
 ];
 
-const SORT_OPTIONS = [
-  { id: 'ai', label: 'AI Score: Best → Worst' },
-  { id: 'price_low', label: 'Price: Low → High' },
-  { id: 'eta_fast', label: 'ETA: Fast → Slow' },
-  { id: 'stability_high', label: 'Stability: High → Low' },
-  { id: 'effort_best', label: 'Human Effort: Best → Worst' },
-];
-
 const RideComparison = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -41,7 +33,6 @@ const RideComparison = () => {
 
   const [activeCategory, setActiveCategory] = useState('cab4');
   const [userPreferences, setUserPreferences] = useState('balanced');
-  const [sortOrder, setSortOrder] = useState('ai');
   const [selectedOptionId, setSelectedOptionId] = useState(null);
   const [isBooking, setIsBooking] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
@@ -68,25 +59,25 @@ const RideComparison = () => {
     refreshIntervalMs: 10000,
   });
 
-  // Dynamic sorting on actual normalized options
+  // Dynamic sorting based on active user preference strategy
   const displayOptions = useMemo(() => {
     if (!rankedOptions || rankedOptions.length === 0) return [];
     const list = [...rankedOptions];
 
-    switch (sortOrder) {
-      case 'price_low':
+    switch (userPreferences) {
+      case 'cheapest':
         return list.sort((a, b) => a.fare - b.fare);
-      case 'eta_fast':
+      case 'fastest':
         return list.sort((a, b) => a.eta - b.eta);
-      case 'stability_high':
+      case 'reliable':
         return list.sort((a, b) => b.stabilityScore - a.stabilityScore);
-      case 'effort_best':
+      case 'effort':
         return list.sort((a, b) => b.humanEffortScore - a.humanEffortScore);
-      case 'ai':
+      case 'balanced':
       default:
         return list.sort((a, b) => b.overallScore - a.overallScore);
     }
-  }, [rankedOptions, sortOrder]);
+  }, [rankedOptions, userPreferences]);
 
   // Keep selected option valid
   useEffect(() => {
@@ -128,52 +119,56 @@ const RideComparison = () => {
       <div style={{ position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)', filter: 'blur(40px)', zIndex: 0 }} />
 
       {/* Map Section */}
-      <div style={{ height: '34%', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ height: '32%', position: 'relative', overflow: 'hidden' }}>
         <RouteMap origin={currentLocation?.coords} destination={destination} travelMode={activeCategory === 'transit' ? 'TRANSIT' : 'DRIVING'} />
-        <div style={{ position: 'absolute', top: '56px', left: '20px', zIndex: 50 }}>
-          <button onClick={() => navigate(-1)} className="btn-icon" style={{ width: '44px', height: '44px', borderRadius: '14px', background: 'var(--bg-surface)', backdropFilter: 'blur(20px)' }}>
-            <ArrowLeft size={20} color="var(--text-main)" />
+        <div style={{ position: 'absolute', top: '44px', left: '16px', zIndex: 50 }}>
+          <button onClick={() => navigate(-1)} className="btn-icon" style={{ width: '42px', height: '42px', borderRadius: '14px', background: 'var(--bg-surface)', backdropFilter: 'blur(20px)', border: '1px solid var(--border-ui)' }}>
+            <ArrowLeft size={18} color="var(--text-main)" />
           </button>
         </div>
 
-        {/* Floating Destination & Mode Status Card */}
+        {/* Floating Destination Card */}
         <motion.div 
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          style={{ position: 'absolute', bottom: '24px', left: '20px', right: '20px', zIndex: 50 }}
+          style={{ position: 'absolute', bottom: '20px', left: '16px', right: '16px', zIndex: 50 }}
         >
           <div style={{ 
             background: 'var(--bg-surface)', 
             backdropFilter: 'blur(24px)', 
             border: '1px solid var(--border-ui)', 
-            borderRadius: '20px', 
-            padding: '12px 16px', 
+            borderRadius: '18px', 
+            padding: '10px 14px', 
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'space-between',
-            boxShadow: '0 12px 48px rgba(0,0,0,0.2)' 
+            boxShadow: '0 12px 48px rgba(0,0,0,0.25)' 
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: 1 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: 1 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00D8FF' }} />
-                <div style={{ width: '1px', height: '14px', background: '#6366F1' }} />
+                <div style={{ width: '1px', height: '12px', background: '#6366F1' }} />
                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#6366F1' }} />
               </div>
               <div style={{ minWidth: 0, flex: 1 }}>
-                <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Route Destination</p>
-                <h3 style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{destination}</h3>
+                <p style={{ fontSize: '0.58rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Route Destination</p>
+                <h3 style={{ fontSize: '0.88rem', color: 'var(--text-main)', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{destination}</h3>
               </div>
             </div>
 
-            {/* DEMO / LIVE Mode Toggle Badge */}
-            <button
-              onClick={() => setIsLiveMode(!isLiveMode)}
+            {/* Clickable Mode Switcher */}
+            <motion.button
+              whileTap={{ scale: 0.92 }}
+              onClick={() => {
+                setIsLiveMode(!isLiveMode);
+                manualRefresh();
+              }}
               style={{
                 background: isLiveMode ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
                 border: `1px solid ${isLiveMode ? '#10B981' : '#F59E0B'}`,
                 borderRadius: '10px',
                 padding: '4px 10px',
-                fontSize: '0.65rem',
+                fontSize: '0.62rem',
                 fontWeight: 800,
                 color: isLiveMode ? '#10B981' : '#F59E0B',
                 cursor: 'pointer',
@@ -182,7 +177,7 @@ const RideComparison = () => {
               }}
             >
               {isLiveMode ? '🟢 LIVE API' : '⚡ DEMO MODE'}
-            </button>
+            </motion.button>
           </div>
         </motion.div>
       </div>
@@ -192,128 +187,145 @@ const RideComparison = () => {
         flex: 1, 
         background: 'var(--bg-surface)', 
         backdropFilter: 'blur(30px) saturate(180%)',
-        borderTopLeftRadius: '32px', 
-        borderTopRightRadius: '32px', 
-        marginTop: '-16px', 
+        borderTopLeftRadius: '28px', 
+        borderTopRightRadius: '28px', 
+        marginTop: '-12px', 
         zIndex: 100, 
         display: 'flex', 
         flexDirection: 'column', 
         border: '1px solid var(--border-ui)',
-        boxShadow: '0 -20px 60px rgba(0,0,0,0.2)'
+        boxShadow: '0 -20px 60px rgba(0,0,0,0.3)'
       }}>
-        {/* Pull Indicator */}
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '8px' }}>
-          <div style={{ width: '40px', height: '5px', borderRadius: '99px', background: 'var(--border-ui)' }} />
+        {/* Pull Handle */}
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '6px' }}>
+          <div style={{ width: '36px', height: '4px', borderRadius: '99px', background: 'var(--border-ui)' }} />
         </div>
 
-        {/* Live Refresh & Timestamp Status Bar */}
-        <div style={{ padding: '0 20px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        {/* Status & Action Bar */}
+        <div style={{ padding: '0 16px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ 
-              fontSize: '0.65rem', fontWeight: 800, 
-              color: isLiveMode ? '#10B981' : '#F59E0B',
-              background: isLiveMode ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)',
-              padding: '2px 8px', borderRadius: '6px', border: `1px solid ${isLiveMode ? '#10B98130' : '#F59E0B30'}`
-            }}>
+            <motion.button
+              whileTap={{ scale: 0.94 }}
+              onClick={() => {
+                setIsLiveMode(!isLiveMode);
+                manualRefresh();
+              }}
+              style={{ 
+                fontSize: '0.65rem', fontWeight: 800, 
+                color: isLiveMode ? '#10B981' : '#F59E0B',
+                background: isLiveMode ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)',
+                padding: '3px 10px', borderRadius: '8px', 
+                border: `1px solid ${isLiveMode ? '#10B98140' : '#F59E0B40'}`,
+                cursor: 'pointer'
+              }}
+            >
               {isLiveMode ? 'LIVE DATA' : 'DEMO DATA'}
-            </span>
+            </motion.button>
             <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 600 }}>
               Updated {secondsAgo} sec ago
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <motion.button
+              whileTap={{ scale: 0.92 }}
               onClick={() => manualRefresh()}
               disabled={isRefreshing}
               style={{
                 background: 'var(--bg-elevated)', border: '1px solid var(--border-ui)',
-                borderRadius: '8px', padding: '4px 8px', display: 'flex', alignItems: 'center', gap: '4px',
-                cursor: 'pointer', fontSize: '0.68rem', color: 'var(--text-main)', fontWeight: 600
+                borderRadius: '10px', padding: '6px 10px', display: 'flex', alignItems: 'center', gap: '5px',
+                cursor: 'pointer', fontSize: '0.7rem', color: 'var(--text-main)', fontWeight: 700
               }}
             >
-              <RefreshCw size={11} className={isRefreshing ? 'animate-spin' : ''} color="var(--brand-cyan)" />
+              <RefreshCw size={12} className={isRefreshing ? 'animate-spin' : ''} color="var(--brand-cyan)" />
               <span>Refresh</span>
-            </button>
+            </motion.button>
+
             <motion.button 
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.92 }}
               onClick={() => setChatOpen(true)}
               style={{ 
-                display: 'flex', alignItems: 'center', gap: '4px', 
-                background: 'rgba(0, 216, 255, 0.1)', 
-                border: '1px solid rgba(0, 216, 255, 0.25)', 
-                borderRadius: '8px', padding: '4px 10px', 
-                cursor: 'pointer', fontSize: '0.68rem', fontWeight: 800, color: '#00D8FF' 
+                display: 'flex', alignItems: 'center', gap: '5px', 
+                background: 'rgba(0, 216, 255, 0.12)', 
+                border: '1px solid rgba(0, 216, 255, 0.3)', 
+                borderRadius: '10px', padding: '6px 12px', 
+                cursor: 'pointer', fontSize: '0.7rem', fontWeight: 800, color: '#00D8FF' 
               }}
             >
-              <Sparkles size={12} /> Chubby AI
+              <Sparkles size={13} color="#00D8FF" /> Chubby AI
             </motion.button>
           </div>
         </div>
 
         {/* Preferences / AI Agent Strategy Filters */}
-        <div style={{ padding: '0 20px 8px' }}>
+        <div style={{ padding: '0 16px 8px' }}>
           <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }} className="no-scrollbar">
             {PREFERENCE_FILTERS.map(pref => {
               const isActive = userPreferences === pref.id;
               return (
-                <button
+                <motion.button
                   key={pref.id}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setUserPreferences(pref.id)}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: '4px',
-                    padding: '6px 12px', borderRadius: '12px',
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    padding: '7px 14px', borderRadius: '14px',
                     border: isActive ? '1px solid #6366F1' : '1px solid var(--border-ui)',
-                    background: isActive ? 'rgba(99, 102, 241, 0.15)' : 'var(--bg-card)',
-                    color: isActive ? '#6366F1' : 'var(--text-muted)',
-                    fontSize: '0.72rem', fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap'
+                    background: isActive ? 'rgba(99, 102, 241, 0.2)' : 'var(--bg-card)',
+                    color: isActive ? '#818CF8' : 'var(--text-muted)',
+                    fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap',
+                    boxShadow: isActive ? '0 0 14px rgba(99, 102, 241, 0.3)' : 'none',
+                    transition: 'all 0.25s'
                   }}
                 >
                   <span>{pref.emoji}</span>
                   <span>{pref.label}</span>
-                </button>
+                </motion.button>
               );
             })}
           </div>
         </div>
 
         {/* Vehicle Category Bar */}
-        <div style={{ padding: '0 20px 10px' }}>
+        <div style={{ padding: '0 16px 10px' }}>
           <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px' }} className="no-scrollbar">
             {CATEGORIES.map(cat => {
               const isActive = activeCategory === cat.id;
               return (
-                <button
+                <motion.button
                   key={cat.id}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setActiveCategory(cat.id)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: '6px',
-                    padding: '7px 12px', borderRadius: '12px',
+                    padding: '8px 14px', borderRadius: '14px',
                     border: isActive ? '1px solid #00D8FF' : '1px solid var(--border-ui)',
-                    background: isActive ? 'rgba(0, 216, 255, 0.12)' : 'var(--bg-card)',
+                    background: isActive ? 'rgba(0, 216, 255, 0.15)' : 'var(--bg-card)',
                     color: isActive ? '#00D8FF' : 'var(--text-muted)',
-                    fontSize: '0.75rem', fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap'
+                    fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap',
+                    boxShadow: isActive ? '0 0 14px rgba(0, 216, 255, 0.2)' : 'none',
+                    transition: 'all 0.25s'
                   }}
                 >
-                  <span style={{ fontSize: '0.85rem' }}>{cat.emoji}</span>
+                  <span style={{ fontSize: '0.9rem' }}>{cat.emoji}</span>
                   <span>{cat.label}</span>
-                </button>
+                </motion.button>
               );
             })}
           </div>
         </div>
 
         {/* Dynamic Options List */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 16px', display: 'flex', flexDirection: 'column', gap: '10px' }} className="no-scrollbar">
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: '10px' }} className="no-scrollbar">
           <AnimatePresence mode="wait">
             {isLoading ? (
               <motion.div key="loader" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ height: '100%', display: 'flex', alignItems: 'center' }}>
                 <VehicleLoader />
               </motion.div>
             ) : (
-              <motion.div key={activeCategory} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <motion.div key={activeCategory + userPreferences} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 
-                {displayOptions.map((opt, idx) => {
+                {displayOptions.map((opt) => {
                   const isActive = selectedOptionId === opt.id;
                   const isTopPick = topPick && topPick.id === opt.id;
 
