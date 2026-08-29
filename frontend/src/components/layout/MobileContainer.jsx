@@ -1,32 +1,71 @@
+import { View, StyleSheet, SafeAreaView, Dimensions, Platform } from 'react-native';
 import { Outlet } from 'react-router-dom';
 
-const MobileContainer = () => (
-  <div
-    className="min-h-screen flex items-center justify-center"
-    style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(var(--brand-indigo-rgb), 0.08) 0%, #040608 60%)' }}
-  >
-    <div
-      className="relative overflow-hidden flex flex-col"
-      style={{
-        width: '100%',
-        maxWidth: '390px',
-        height: '100dvh',
-        maxHeight: '844px',
-        background: 'var(--bg-base)',
-        borderRadius: window.innerWidth > 640 ? '48px' : '0',
-        boxShadow: window.innerWidth > 640 ? '0 0 0 10px #0A0D16, 0 40px 80px rgba(0,0,0,0.8)' : 'none',
-      }}
-    >
-      {/* Notch bar for desktop preview */}
-      <div className="hidden sm:flex absolute top-0 inset-x-0 h-7 z-50 justify-center pt-2 pointer-events-none">
-        <div style={{ width: '120px', height: '20px', background: '#0A0D16', borderRadius: '0 0 16px 16px' }} />
-      </div>
+const { width } = Dimensions.get('window');
 
-      <div className="flex-1 overflow-y-auto no-scrollbar w-full h-full">
+const MobileContainer = () => (
+  <SafeAreaView style={styles.outerContainer}>
+    <View style={[styles.innerContainer, width > 640 && styles.desktopFrame]}>
+      {/* Notch bar for desktop preview */}
+      {width > 640 && (
+        <View style={styles.notchContainer}>
+          <View style={styles.notch} />
+        </View>
+      )}
+
+      <View style={styles.content}>
         <Outlet />
-      </div>
-    </div>
-  </div>
+      </View>
+    </View>
+  </SafeAreaView>
 );
+
+const styles = StyleSheet.create({
+  outerContainer: {
+    flex: 1,
+    backgroundColor: '#040608',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  innerContainer: {
+    width: '100%',
+    maxWidth: 390,
+    height: '100%',
+    backgroundColor: '#080C14',
+    overflow: 'hidden',
+  },
+  desktopFrame: {
+    borderRadius: 48,
+    borderWidth: 10,
+    borderColor: '#0A0D16',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.8,
+    shadowRadius: 40,
+    elevation: 20,
+  },
+  notchContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 28,
+    zIndex: 999,
+    alignItems: 'center',
+    paddingTop: 8,
+  },
+  notch: {
+    width: 120,
+    height: 20,
+    backgroundColor: '#0A0D16',
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+  },
+  content: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+});
 
 export default MobileContainer;

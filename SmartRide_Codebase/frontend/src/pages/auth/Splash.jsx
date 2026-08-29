@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
+import { View, Text, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import appIcon from '../../assets/app-icon.png';
 
 const Splash = () => {
@@ -12,74 +12,113 @@ const Splash = () => {
   }, [navigate]);
 
   return (
-    <div className="h-full flex flex-col items-center justify-center relative overflow-hidden" style={{ background: 'var(--bg-base)' }}>
-      {/* Ambient glow */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div style={{
-          position: 'absolute', top: '20%', left: '50%', transform: 'translate(-50%,-50%)',
-          width: '320px', height: '320px',
-          background: 'radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%)',
-          filter: 'blur(40px)',
-        }} />
-        <div style={{
-          position: 'absolute', bottom: '20%', right: '15%',
-          width: '200px', height: '200px',
-          background: 'radial-gradient(circle, rgba(0,216,255,0.12) 0%, transparent 70%)',
-          filter: 'blur(40px)',
-        }} />
-      </div>
+    <View style={styles.container}>
+      {/* Background glow circle */}
+      <View style={styles.glowTop} />
+      <View style={styles.glowBottom} />
 
-      {/* Logo */}
-      <motion.div
-        initial={{ scale: 0.7, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-        className="flex flex-col items-center relative z-10"
-      >
-        <div style={{
-          width: '88px', height: '88px', borderRadius: '28px',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '28px',
-          overflow: 'hidden',
-          background: 'var(--bg-elevated)',
-          border: '1px solid var(--border-ui)'
-        }}>
-          <img src={appIcon} alt="SmartRide AI Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>
+      {/* Logo & Title */}
+      <View style={styles.logoContainer}>
+        <View style={styles.iconBox}>
+          <Image source={{ uri: appIcon }} style={styles.iconImage} resizeMode="cover" />
+        </View>
 
-        <motion.div
-          initial={{ y: 16, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.35, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center"
-        >
-          <h1 style={{ fontSize: '2.4rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-main)', lineHeight: 1 }}>
-            SmartRide
-            <span style={{ background: 'linear-gradient(90deg, #00D8FF, #6366F1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}> AI</span>
-          </h1>
-          <p style={{ fontSize: '0.78rem', fontWeight: 500, letterSpacing: '0.22em', color: '#4B5563', marginTop: '10px', textTransform: 'uppercase' }}>
-            Intelligent Mobility
-          </p>
-        </motion.div>
-      </motion.div>
+        <View style={styles.textContainer}>
+          <Text style={styles.titleText}>
+            SmartRide <Text style={styles.titleGradient}>AI</Text>
+          </Text>
+          <Text style={styles.subtitleText}>
+            INTELLIGENT MOBILITY
+          </Text>
+        </View>
+      </View>
 
-      {/* Bottom loading bar */}
-      <motion.div
-        className="absolute bottom-16"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-        style={{ width: '80px', height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '99px', overflow: 'hidden' }}
-      >
-        <motion.div
-          initial={{ x: '-100%' }}
-          animate={{ x: '100%' }}
-          transition={{ duration: 1.8, ease: 'easeInOut', repeat: Infinity }}
-          style={{ height: '100%', width: '50%', background: 'linear-gradient(90deg, transparent, #6366F1, transparent)', borderRadius: '99px' }}
-        />
-      </motion.div>
-    </div>
+      {/* Bottom Loading Indicator */}
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="small" color="#00D8FF" />
+      </View>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#080C14',
+    alignItems: 'center',
+    justify: 'center',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  glowTop: {
+    position: 'absolute',
+    top: '20%',
+    left: '50%',
+    transform: [{ translateX: -160 }, { translateY: -160 }],
+    width: 320,
+    height: 320,
+    borderRadius: 160,
+    backgroundColor: 'rgba(99, 102, 241, 0.18)',
+  },
+  glowBottom: {
+    position: 'absolute',
+    bottom: '20%',
+    right: '15%',
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: 'rgba(0, 216, 255, 0.12)',
+  },
+  logoContainer: {
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  iconBox: {
+    width: 88,
+    height: 88,
+    borderRadius: 28,
+    backgroundColor: '#1A2340',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.07)',
+    overflow: 'hidden',
+    marginBottom: 28,
+    alignItems: 'center',
+    justify: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  iconImage: {
+    width: '100%',
+    height: '100%',
+  },
+  textContainer: {
+    alignItems: 'center',
+  },
+  titleText: {
+    fontSize: 38,
+    fontWeight: '800',
+    color: '#F1F5F9',
+    letterSpacing: -0.5,
+  },
+  titleGradient: {
+    color: '#00D8FF',
+    fontWeight: '800',
+  },
+  subtitleText: {
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 3,
+    color: '#9CA3AF',
+    marginTop: 10,
+    textTransform: 'uppercase',
+  },
+  loaderContainer: {
+    position: 'absolute',
+    bottom: 64,
+  },
+});
 
 export default Splash;

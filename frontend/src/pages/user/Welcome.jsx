@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
+import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles } from 'lucide-react-native';
 import { useAuth } from '../../lib/AuthContext';
 
 const Welcome = () => {
@@ -18,179 +18,150 @@ const Welcome = () => {
   }, [navigate]);
 
   return (
-    <div style={{ 
-      height: '100%', 
-      display: 'flex', 
-      flexDirection: 'column', 
-      alignItems: 'center', 
-      justifyContent: 'center', 
-      background: 'var(--bg-base)', 
-      position: 'relative', 
-      overflow: 'hidden' 
-    }}>
-      {/* Background Ambient Glows */}
-      <motion.div 
-        animate={{ 
-          scale: [1, 1.2, 1],
-          opacity: [0.3, 0.5, 0.3] 
-        }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        style={{ 
-          position: 'absolute', top: '20%', left: '10%', width: '300px', height: '300px', 
-          background: `radial-gradient(circle, ${accent}22 0%, transparent 70%)`, filter: 'blur(60px)', pointerEvents: 'none' 
-        }} 
-      />
-      <motion.div 
-        animate={{ 
-          scale: [1.2, 1, 1.2],
-          opacity: [0.4, 0.6, 0.4] 
-        }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-        style={{ 
-          position: 'absolute', bottom: '10%', right: '5%', width: '350px', height: '350px', 
-          background: `radial-gradient(circle, #6366F122 0%, transparent 70%)`, filter: 'blur(70px)', pointerEvents: 'none' 
-        }} 
-      />
+    <View style={styles.container}>
+      {/* Background Glows */}
+      <View style={styles.glowTop} />
+      <View style={styles.glowBottom} />
 
       {/* Main Content */}
-      <div style={{ position: 'relative', zIndex: 10, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        
-        {/* Animated Icon Container */}
-        <motion.div
-          initial={{ scale: 0, rotate: -180, y: 20 }}
-          animate={{ scale: 1, rotate: 0, y: 0 }}
-          transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
-          style={{ 
-            width: '110px', height: '110px', borderRadius: '32px', 
-            background: 'rgba(var(--brand-cyan-rgb), 0.05)', 
-            border: `1px solid rgba(var(--brand-cyan-rgb), 0.2)`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '36px',
-            boxShadow: `0 0 60px rgba(var(--brand-cyan-rgb), 0.15)`,
-            backdropFilter: 'blur(10px)'
-          }}
-        >
-          <motion.div
-            animate={{ 
-              scale: [1, 1.15, 1],
-              rotate: [0, 5, -5, 0]
-            }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <Sparkles size={52} color={accent} />
-          </motion.div>
-        </motion.div>
+      <View style={styles.content}>
+        <View style={styles.iconBox}>
+          <Sparkles size={44} color={accent} />
+        </View>
 
-        {/* Text Content */}
-        <div style={{ overflow: 'hidden' }}>
-          <motion.h2
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            style={{ fontSize: '0.9rem', color: accent, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '16px' }}
-          >
-            Identity Verified
-          </motion.h2>
-        </div>
+        <Text style={styles.badgeText}>IDENTITY VERIFIED</Text>
 
-        <motion.h1
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.5 }}
-          style={{ fontSize: '2.8rem', fontWeight: 900, color: 'var(--text-main)', letterSpacing: '-0.03em', marginBottom: '12px', lineHeight: 1.1 }}
-        >
-          Welcome back,<br />
-          <span style={{ 
-            background: `linear-gradient(135deg, ${accent}, #6366F1)`,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            filter: `drop-shadow(0 0 20px rgba(var(--brand-cyan-rgb), 0.3))`
-          }}>
-            {userName}
-          </span>
-        </motion.h1>
+        <Text style={styles.welcomeTitle}>
+          Welcome back,{'\n'}
+          <Text style={styles.nameText}>{userName}</Text>
+        </Text>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2 }}
-          style={{ fontSize: '1.05rem', color: 'var(--text-muted)', maxWidth: '300px', margin: '0 auto', lineHeight: 1.5 }}
-        >
+        <Text style={styles.subtitle}>
           Preparing your AI-optimized commute experience...
-        </motion.p>
+        </Text>
 
-        {/* Loading Progress Bar Container */}
-        <div style={{ marginTop: '54px', position: 'relative' }}>
-          <div style={{ width: '220px', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '99px', overflow: 'hidden' }}>
-            <motion.div
-              initial={{ width: '0%' }}
-              animate={{ width: '100%' }}
-              transition={{ duration: 2.8, ease: "circOut" }}
-              style={{ height: '100%', background: `linear-gradient(90deg, ${accent}, #6366F1)`, boxShadow: `0 0 15px ${accent}` }}
-            />
-          </div>
-          
-          {/* Subtle percentage counter */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 1, 0] }}
-            transition={{ duration: 2.8, times: [0, 0.1, 1] }}
-            style={{ position: 'absolute', top: '-25px', right: 0, fontSize: '0.7rem', fontWeight: 700, color: accent }}
-          >
-            Optimizing...
-          </motion.div>
-        </div>
+        {/* Progress indicator */}
+        <View style={styles.progressBox}>
+          <View style={styles.progressBar}>
+            <View style={styles.progressFill} />
+          </View>
+        </View>
 
-        {/* Status indicator */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.8 }}
-          style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '24px', padding: '8px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: '99px', border: '1px solid rgba(255,255,255,0.05)' }}
-        >
-          <Loader2 size={14} color={accent} className="animate-spin" />
-          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.02em' }}>Syncing neural preferences...</span>
-        </motion.div>
-      </div>
-
-      {/* Floating Particles Overlay */}
-      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            animate={{ 
-              y: [-20, -120],
-              x: [0, (i % 2 === 0 ? 30 : -30)],
-              opacity: [0, 0.4, 0],
-              scale: [0.5, 1, 0.5]
-            }}
-            transition={{ 
-              duration: 3 + i, 
-              repeat: Infinity, 
-              delay: i * 0.5,
-              ease: "linear"
-            }}
-            style={{ 
-              position: 'absolute',
-              bottom: '20%',
-              left: `${15 + i * 15}%`,
-              width: '4px',
-              height: '4px',
-              borderRadius: '50%',
-              background: i % 2 === 0 ? accent : '#6366F1',
-              filter: 'blur(1px)'
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Grid Pattern Overlay */}
-      <div style={{ 
-        position: 'absolute', inset: 0, 
-        backgroundImage: `linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)`, 
-        backgroundSize: '40px 40px', pointerEvents: 'none' 
-      }} />
-    </div>
+        {/* Status Chip */}
+        <View style={styles.statusChip}>
+          <ActivityIndicator size="small" color={accent} style={{ marginRight: 8 }} />
+          <Text style={styles.statusText}>Syncing neural preferences...</Text>
+        </View>
+      </View>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#080C14',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  glowTop: {
+    position: 'absolute',
+    top: '20%',
+    left: '10%',
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    backgroundColor: 'rgba(0, 216, 255, 0.08)',
+  },
+  glowBottom: {
+    position: 'absolute',
+    bottom: '10%',
+    right: '5%',
+    width: 350,
+    height: 350,
+    borderRadius: 175,
+    backgroundColor: 'rgba(99, 102, 241, 0.08)',
+  },
+  content: {
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    zIndex: 10,
+  },
+  iconBox: {
+    width: 110,
+    height: 110,
+    borderRadius: 32,
+    backgroundColor: 'rgba(0, 216, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 216, 255, 0.2)',
+    alignItems: 'center',
+    justify: 'center',
+    marginBottom: 36,
+    shadowColor: '#00D8FF',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 24,
+    elevation: 8,
+  },
+  badgeText: {
+    fontSize: 13,
+    color: '#00D8FF',
+    fontWeight: '800',
+    letterSpacing: 3,
+    marginBottom: 16,
+  },
+  welcomeTitle: {
+    fontSize: 36,
+    fontWeight: '900',
+    color: '#F1F5F9',
+    textAlign: 'center',
+    lineHeight: 42,
+    marginBottom: 12,
+  },
+  nameText: {
+    color: '#00D8FF',
+  },
+  subtitle: {
+    fontSize: 15,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    maxWidth: 280,
+    lineHeight: 22,
+  },
+  progressBox: {
+    marginTop: 48,
+    alignItems: 'center',
+  },
+  progressBar: {
+    width: 220,
+    height: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 99,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#00D8FF',
+    borderRadius: 99,
+  },
+  statusChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 99,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  statusText: {
+    fontSize: 12,
+    color: '#9CA3AF',
+    fontWeight: '600',
+  },
+});
 
 export default Welcome;

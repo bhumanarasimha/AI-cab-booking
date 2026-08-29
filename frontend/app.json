@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "SmartRide AI",
+    "slug": "ai-cab-booking",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./public/app-icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./public/app-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#080C14"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./public/app-icon.png",
+        "backgroundColor": "#080C14"
+      },
+      "package": "com.bhumanarasimha.smartride"
+    },
+    "web": {
+      "favicon": "./public/app-icon.png"
+    }
+  }
+}

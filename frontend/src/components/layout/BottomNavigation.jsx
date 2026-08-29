@@ -1,14 +1,14 @@
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useNavigate, useLocation } from 'react-router-dom';
-
 
 const navItems = [
   {
     path: '/user/home',
     label: 'Home',
     icon: (active) => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill={active ? 'var(--brand-cyan)' : 'none'} stroke={active ? 'var(--brand-cyan)' : 'var(--text-muted)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill={active ? '#00D8FF' : 'none'} stroke={active ? '#00D8FF' : '#9CA3AF'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
-        <path d="M9 21V12h6v9" fill={active ? 'var(--brand-cyan)' : 'none'} stroke={active ? 'var(--brand-cyan)' : 'var(--text-muted)'}/>
+        <path d="M9 21V12h6v9" fill={active ? '#00D8FF' : 'none'} stroke={active ? '#00D8FF' : '#9CA3AF'}/>
       </svg>
     ),
   },
@@ -16,7 +16,7 @@ const navItems = [
     path: '/user/commute',
     label: 'Commute',
     icon: (active) => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill={active ? 'var(--brand-cyan)' : 'none'} stroke={active ? 'var(--brand-cyan)' : 'var(--text-muted)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill={active ? '#00D8FF' : 'none'} stroke={active ? '#00D8FF' : '#9CA3AF'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
         <circle cx="9" cy="7" r="4"/>
         <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
@@ -28,7 +28,7 @@ const navItems = [
     path: '/user/parcel',
     label: 'Parcel',
     icon: (active) => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? 'var(--brand-cyan)' : 'var(--text-muted)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#00D8FF' : '#9CA3AF'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="2" y="7" width="20" height="14" rx="2"/>
         <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
         <line x1="12" y1="12" x2="12" y2="17"/>
@@ -40,7 +40,7 @@ const navItems = [
     path: '/user/activity',
     label: 'Activity',
     icon: (active) => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? 'var(--brand-cyan)' : 'var(--text-muted)'} strokeWidth="2" strokeLinecap="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#00D8FF' : '#9CA3AF'} strokeWidth="2" strokeLinecap="round">
         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
         <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
       </svg>
@@ -50,7 +50,7 @@ const navItems = [
     path: '/user/profile',
     label: 'Profile',
     icon: (active) => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? 'var(--brand-cyan)' : 'var(--text-muted)'} strokeWidth="2" strokeLinecap="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#00D8FF' : '#9CA3AF'} strokeWidth="2" strokeLinecap="round">
         <circle cx="12" cy="8" r="4"/>
         <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
       </svg>
@@ -63,50 +63,87 @@ const BottomNavigation = () => {
   const { pathname } = useLocation();
 
   return (
-    <div className="bottom-nav fixed bottom-0 left-1/2 -translate-x-1/2 w-full z-[1000] pb-4 pt-6 px-4 pointer-events-none" style={{ maxWidth: '390px' }}>
-      <div
-        className="pointer-events-auto flex justify-around items-center"
-        style={{
-          background: 'var(--bg-surface)',
-          backdropFilter: 'blur(24px)',
-          border: '1px solid var(--border-ui)',
-          borderRadius: '24px',
-          padding: '8px 8px',
-          boxShadow: '0 8px 40px rgba(0,0,0,0.15)',
-        }}
-      >
+    <View style={styles.container}>
+      <View style={styles.bar}>
         {navItems.map(item => {
           const active = pathname.startsWith(item.path);
           return (
-            <button
+            <Pressable
               key={item.path}
-              onClick={() => navigate(item.path)}
-              style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center',
-                gap: '4px', padding: '8px 12px', borderRadius: '16px',
-                background: active ? 'rgba(var(--brand-cyan-rgb), 0.08)' : 'transparent',
-                border: active ? '1px solid rgba(var(--brand-cyan-rgb), 0.15)' : '1px solid transparent',
-                cursor: 'pointer', transition: 'all 0.2s ease',
-                position: 'relative',
-              }}
+              onPress={() => navigate(item.path)}
+              style={[styles.item, active && styles.activeItem]}
             >
               {item.icon(active)}
-              <span style={{ fontSize: '10px', fontWeight: 600, color: active ? 'var(--brand-cyan)' : 'var(--text-muted)', letterSpacing: '0.02em' }}>
+              <Text style={[styles.label, active && styles.activeLabel]}>
                 {item.label}
-              </span>
-              {active && (
-                <div style={{
-                  position: 'absolute', bottom: '-1px', left: '50%', transform: 'translateX(-50%)',
-                  width: '20px', height: '2px', borderRadius: '99px',
-                  background: 'var(--brand-cyan)', boxShadow: '0 0 8px var(--brand-cyan)',
-                }} />
-              )}
-            </button>
+              </Text>
+              {active && <View style={styles.indicator} />}
+            </Pressable>
           );
         })}
-      </div>
-    </div>
+      </View>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    paddingTop: 12,
+  },
+  bar: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    backgroundColor: '#0F1623',
+    borderColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
+    borderRadius: 24,
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  item: {
+    alignItems: 'center',
+    justify: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 16,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  activeItem: {
+    backgroundColor: 'rgba(0, 216, 255, 0.08)',
+    borderColor: 'rgba(0, 216, 255, 0.15)',
+  },
+  label: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#9CA3AF',
+    marginTop: 3,
+  },
+  activeLabel: {
+    color: '#00D8FF',
+  },
+  indicator: {
+    position: 'absolute',
+    bottom: -1,
+    width: 16,
+    height: 2,
+    borderRadius: 99,
+    backgroundColor: '#00D8FF',
+  },
+});
 
 export default BottomNavigation;

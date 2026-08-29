@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
+import { View, Text, TextInput, Pressable, Image, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, ArrowRight, Lock, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, Lock } from 'lucide-react-native';
 import { useAuth } from '../../lib/AuthContext';
 
 const socials = [
-  { label:'Google',   logo:'https://www.svgrepo.com/show/475656/google-color.svg' },
-  { label:'Facebook', logo:'https://www.svgrepo.com/show/475647/facebook-color.svg' },
+  { label: 'Google', logo: 'https://www.svgrepo.com/show/475656/google-color.svg' },
+  { label: 'Facebook', logo: 'https://www.svgrepo.com/show/475647/facebook-color.svg' },
 ];
 
 const Login = () => {
@@ -27,8 +27,11 @@ const Login = () => {
     }
   }, [user, loading, navigate]);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const handleLogin = async () => {
+    if (!email || !password) {
+      setError('Please enter both email and password.');
+      return;
+    }
     setError('');
     setIsLoading(true);
 
@@ -89,193 +92,368 @@ const Login = () => {
   };
 
   return (
-    <div className="h-full flex flex-col overflow-y-auto no-scrollbar" style={{ background:'var(--bg-base)', padding:'0 24px' }}>
-      {/* Ambient glow */}
-      <div style={{ position:'absolute', top:'-5%', left:'-10%', width:'280px', height:'280px', background:`radial-gradient(circle, ${accent}22 0%, transparent 70%)`, filter:'blur(50px)', pointerEvents:'none' }} />
+    <ScrollView contentContainerStyle={styles.scrollContainer} style={styles.container}>
+      {/* Glow */}
+      <View style={styles.glow} />
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key="signin"
-          initial={{ opacity:0, y:12 }}
-          animate={{ opacity:1, y:0 }}
-          exit={{ opacity:0, y:-12 }}
-          style={{ flex:1, display:'flex', flexDirection:'column' }}
-        >
-          {/* Header */}
-          <div style={{ paddingTop:'56px', marginBottom:'32px', position:'relative', zIndex:10 }}>
-            <div className="ai-chip px-3 py-1.5 mb-4" style={{ width:'fit-content', borderColor:`${accent}40`, color:accent }}>
-              <div style={{ width:'6px', height:'6px', borderRadius:'99px', background:accent, flexShrink:0 }} />
-              Rider Portal
-            </div>
-            <h1 style={{ fontSize:'2rem', fontWeight:800, color:'var(--text-main)', letterSpacing:'-0.02em', marginBottom:'8px' }}>
-              Welcome back
-            </h1>
-            <p style={{ fontSize:'0.9rem', color:'#4B5563' }}>Sign in to your SmartRide AI account.</p>
-          </div>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.chip}>
+          <View style={styles.chipDot} />
+          <Text style={styles.chipText}>Rider Portal</Text>
+        </View>
+        <Text style={styles.titleText}>Welcome back</Text>
+        <Text style={styles.subtitleText}>Sign in to your SmartRide AI account.</Text>
+      </View>
 
-          {/* Sign In / Sign Up Switcher */}
-          <div style={{ 
-            display:'grid', 
-            gridTemplateColumns: '1fr 1fr',
-            background:'var(--bg-elevated)', 
-            borderRadius:'16px', 
-            padding:'6px', 
-            gap:'6px', 
-            marginBottom:'24px', 
-            position:'relative', 
-            zIndex:10,
-            border: '1px solid var(--border-ui)'
-          }}>
-             <button 
-              type="button"
-              onClick={() => navigate('/login')}
-              style={{ 
-                height:'44px', 
-                borderRadius:'12px', 
-                fontSize:'0.9rem', 
-                fontWeight:700, 
-                cursor:'pointer', 
-                transition:'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
-                background:'var(--brand-cyan)', 
-                color:'#080C14', 
-                border:'none',
-                boxShadow: '0 4px 12px rgba(0, 216, 255, 0.2)'
-              }}
-             >
-               Sign In
-             </button>
-             <button 
-              type="button"
-              onClick={() => navigate('/signup')}
-              style={{ 
-                height:'44px', 
-                borderRadius:'12px', 
-                fontSize:'0.9rem', 
-                fontWeight:700, 
-                cursor:'pointer', 
-                transition:'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
-                background:'transparent', 
-                color:'var(--text-muted)', 
-                border:'none'
-              }}
-             >
-               Sign Up
-             </button>
-          </div>
+      {/* Switcher */}
+      <View style={styles.switcher}>
+        <Pressable onPress={() => navigate('/login')} style={[styles.switchBtn, styles.switchActive]}>
+          <Text style={styles.switchActiveText}>Sign In</Text>
+        </Pressable>
+        <Pressable onPress={() => navigate('/signup')} style={styles.switchBtn}>
+          <Text style={styles.switchInactiveText}>Sign Up</Text>
+        </Pressable>
+      </View>
 
-          {/* Error Message */}
-          {error && (
-            <div style={{ marginBottom:'16px', padding:'12px', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.2)', borderRadius:'12px', color:'#EF4444', fontSize:'0.85rem', display:'flex', gap:'8px', alignItems:'center' }}>
-              <div style={{ width:'4px', height:'4px', borderRadius:'99px', background:'#EF4444' }} />
-              {error}
-            </div>
+      {/* Error Banner */}
+      {!!error && (
+        <View style={styles.errorBanner}>
+          <View style={styles.errorDot} />
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
+
+      {/* Success Banner */}
+      {!!successMsg && (
+        <View style={styles.successBanner}>
+          <View style={styles.successDot} />
+          <Text style={styles.successText}>{successMsg}</Text>
+        </View>
+      )}
+
+      {/* Form */}
+      <View style={styles.form}>
+        <View style={styles.inputContainer}>
+          <TextInput
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Email address"
+            placeholderTextColor="#4B5563"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            style={styles.input}
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <TextInput
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Password"
+            placeholderTextColor="#4B5563"
+            secureTextEntry={!showPw}
+            style={[styles.input, { paddingRight: 46 }]}
+          />
+          <Pressable onPress={() => setShowPw(!showPw)} style={styles.eyeBtn}>
+            {showPw ? <EyeOff size={18} color="#4B5563" /> : <Eye size={18} color="#4B5563" />}
+          </Pressable>
+        </View>
+
+        <Pressable onPress={handleForgotPassword} style={styles.forgotBtn}>
+          <Text style={styles.forgotText}>Forgot password?</Text>
+        </Pressable>
+
+        <Pressable onPress={handleLogin} disabled={isLoading} style={[styles.submitBtn, isLoading && { opacity: 0.7 }]}>
+          {isLoading ? (
+            <ActivityIndicator color="#080C14" />
+          ) : (
+            <View style={styles.btnRow}>
+              <Text style={styles.submitBtnText}>Sign In </Text>
+              <ArrowRight size={18} color="#080C14" />
+            </View>
           )}
+        </Pressable>
+      </View>
 
-          {/* Success Message */}
-          {successMsg && (
-            <div style={{ marginBottom:'16px', padding:'12px', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.2)', borderRadius:'12px', color:'#10B981', fontSize:'0.85rem', display:'flex', gap:'8px', alignItems:'center' }}>
-              <div style={{ width:'4px', height:'4px', borderRadius:'99px', background:'#10B981' }} />
-              {successMsg}
-            </div>
-          )}
+      {/* Divider */}
+      <View style={styles.dividerRow}>
+        <View style={styles.dividerLine} />
+        <Text style={styles.dividerText}>or continue with</Text>
+        <View style={styles.dividerLine} />
+      </View>
 
-          {/* Form */}
-          <form
-            onSubmit={handleLogin}
-            style={{ display:'flex', flexDirection:'column', gap:'14px', position:'relative', zIndex:10 }}
-          >
-            {/* Email */}
-            <div style={{ position:'relative' }}>
-              <div style={{ position:'absolute', left:'16px', top:'50%', transform:'translateY(-50%)' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4B5563" strokeWidth="2" strokeLinecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-              </div>
-              <input
-                type="email" value={email} onChange={e => setEmail(e.target.value)}
-                className="field" placeholder="Email address" required
-                style={{ padding:'15px 16px 15px 46px', fontSize:'0.95rem' }}
-              />
-            </div>
+      {/* Social Grid */}
+      <View style={styles.socialGrid}>
+        <Pressable onPress={handleGoogleLogin} disabled={isLoading} style={styles.socialBtn}>
+          <Image source={{ uri: socials[0].logo }} style={styles.socialIcon} resizeMode="contain" />
+        </Pressable>
+        <Pressable onPress={handleFacebookLogin} disabled={isLoading} style={styles.socialBtn}>
+          <Image source={{ uri: socials[1].logo }} style={styles.socialIcon} resizeMode="contain" />
+        </Pressable>
+      </View>
 
-            {/* Password */}
-            <div style={{ position:'relative' }}>
-              <div style={{ position:'absolute', left:'16px', top:'50%', transform:'translateY(-50%)' }}>
-                <Lock size={18} color="#4B5563" />
-              </div>
-              <input
-                type={showPw ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
-                className="field" placeholder="Password" required
-                style={{ padding:'15px 46px 15px 46px', fontSize:'0.95rem' }}
-              />
-              <button type="button" onClick={() => setShowPw(!showPw)} style={{ position:'absolute', right:'16px', top:'50%', transform:'translateY(-50%)', color:'#4B5563', background:'none', border:'none', cursor:'pointer' }}>
-                {showPw ? <EyeOff size={18}/> : <Eye size={18}/>}
-              </button>
-            </div>
+      {/* Footer link */}
+      <View style={styles.footerLinkRow}>
+        <Text style={styles.footerText}>Don't have an account? </Text>
+        <Pressable onPress={() => navigate('/signup')}>
+          <Text style={styles.signupText}>Sign up</Text>
+        </Pressable>
+      </View>
 
-            <div style={{ textAlign:'right' }}>
-              <button type="button" onClick={handleForgotPassword} style={{ fontSize:'0.83rem', color:accent, fontWeight:500, background:'none', border:'none', cursor:'pointer' }}>
-                Forgot password?
-              </button>
-            </div>
-
-            {/* Sign in button */}
-            <button 
-              type="submit" 
-              disabled={isLoading}
-              className="btn-cyan w-full h-14" 
-              style={{ gap:'8px', color:'#080C14', fontWeight:700, opacity: isLoading ? 0.7 : 1 }}
-            >
-              {isLoading ? <Loader2 className="animate-spin" size={18} /> : 'Sign In'} 
-              {!isLoading && <ArrowRight size={18}/>}
-            </button>
-
-          </form>
-          
-          {/* Divider */}
-          <div style={{ display:'flex', alignItems:'center', gap:'12px', margin:'20px 0 10px 0', position:'relative', zIndex:10 }}>
-            <div className="divider" style={{ flex:1 }} />
-            <span style={{ fontSize:'0.8rem', color:'#374151', whiteSpace:'nowrap' }}>or continue with</span>
-            <div className="divider" style={{ flex:1 }} />
-          </div>
-
-          {/* Social Grid (Google and Facebook) */}
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:'12px', position:'relative', zIndex:10 }}>
-            <button 
-              onClick={handleGoogleLogin}
-              disabled={isLoading}
-              type="button" className="btn-icon" style={{ height:'48px' }}
-            >
-              <img src={socials[0].logo} alt="Google" style={{ width:'22px', height:'22px', objectFit:'contain' }} />
-            </button>
-            <button 
-              onClick={handleFacebookLogin}
-              disabled={isLoading}
-              type="button" className="btn-icon" style={{ height:'48px' }}
-            >
-              <img src={socials[1].logo} alt="Facebook" style={{ width:'22px', height:'22px', objectFit:'contain' }} />
-            </button>
-          </div>
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Sign up link */}
-      <div style={{ textAlign:'center', marginTop:'28px', marginBottom:'24px', fontSize:'0.875rem', color:'#4B5563', position:'relative', zIndex:10 }}>
-        Don't have an account?{' '}
-        <button
-          onClick={() => navigate('/signup')}
-          style={{ color:accent, fontWeight:600, background:'none', border:'none', cursor:'pointer' }}
-        >
-          Sign up
-        </button>
-      </div>
-
-      <p style={{ textAlign: 'center', fontSize: '0.75rem', color: '#374151', marginBottom: '32px', lineHeight: 1.6 }}>
+      <Text style={styles.termsText}>
         By continuing, you agree to our{' '}
-        <span onClick={() => navigate('/terms')} style={{ color: '#6B7280', textDecoration: 'underline', cursor: 'pointer' }}>Terms of Service</span>{' '}
+        <Text onPress={() => navigate('/terms')} style={styles.linkText}>Terms of Service</Text>{' '}
         and{' '}
-        <span onClick={() => navigate('/privacy')} style={{ color: '#6B7280', textDecoration: 'underline', cursor: 'pointer' }}>Privacy Policy</span>.
-      </p>
-    </div>
+        <Text onPress={() => navigate('/privacy')} style={styles.linkText}>Privacy Policy</Text>.
+      </Text>
+    </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#080C14',
+  },
+  scrollContainer: {
+    paddingHorizontal: 24,
+    paddingTop: 56,
+    paddingBottom: 32,
+  },
+  glow: {
+    position: 'absolute',
+    top: -40,
+    left: -40,
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    backgroundColor: 'rgba(0, 216, 255, 0.08)',
+  },
+  header: {
+    marginBottom: 28,
+  },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 216, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 216, 255, 0.25)',
+    alignSelf: 'flex-start',
+    marginBottom: 16,
+  },
+  chipDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#00D8FF',
+    marginRight: 6,
+  },
+  chipText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#00D8FF',
+  },
+  titleText: {
+    fontSize: 30,
+    fontWeight: '800',
+    color: '#F1F5F9',
+    marginBottom: 8,
+  },
+  subtitleText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+  },
+  switcher: {
+    flexDirection: 'row',
+    backgroundColor: '#1A2340',
+    borderRadius: 16,
+    padding: 6,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.07)',
+  },
+  switchBtn: {
+    flex: 1,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  switchActive: {
+    backgroundColor: '#00D8FF',
+    shadowColor: '#00D8FF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  switchActiveText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#080C14',
+  },
+  switchInactiveText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#9CA3AF',
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.2)',
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  errorDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#EF4444',
+    marginRight: 8,
+  },
+  errorText: {
+    fontSize: 13,
+    color: '#EF4444',
+    flex: 1,
+  },
+  successBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  successDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#10B981',
+    marginRight: 8,
+  },
+  successText: {
+    fontSize: 13,
+    color: '#10B981',
+    flex: 1,
+  },
+  form: {
+    gap: 14,
+  },
+  inputContainer: {
+    position: 'relative',
+  },
+  input: {
+    backgroundColor: '#0F1623',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.07)',
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 15,
+    color: '#F1F5F9',
+  },
+  eyeBtn: {
+    position: 'absolute',
+    right: 16,
+    top: 14,
+  },
+  forgotBtn: {
+    alignSelf: 'flex-end',
+    marginBottom: 4,
+  },
+  forgotText: {
+    fontSize: 13,
+    color: '#00D8FF',
+    fontWeight: '500',
+  },
+  submitBtn: {
+    height: 54,
+    backgroundColor: '#00D8FF',
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#00D8FF',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  btnRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  submitBtnText: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#080C14',
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  dividerText: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginHorizontal: 12,
+  },
+  socialGrid: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  socialBtn: {
+    flex: 1,
+    height: 48,
+    backgroundColor: '#0F1623',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.07)',
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  socialIcon: {
+    width: 22,
+    height: 22,
+  },
+  footerLinkRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 28,
+    marginBottom: 20,
+  },
+  footerText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+  },
+  signupText: {
+    fontSize: 14,
+    color: '#00D8FF',
+    fontWeight: '700',
+  },
+  termsText: {
+    textAlign: 'center',
+    fontSize: 12,
+    color: '#6B7280',
+    lineHeight: 18,
+  },
+  linkText: {
+    color: '#9CA3AF',
+    textDecorationLine: 'underline',
+  },
+});
 
 export default Login;
