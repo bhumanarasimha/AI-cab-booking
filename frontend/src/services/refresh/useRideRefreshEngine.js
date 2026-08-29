@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { UberProvider } from '../providers/UberProvider';
 import { OlaProvider } from '../providers/OlaProvider';
 import { RapidoProvider } from '../providers/RapidoProvider';
+import { NammaYatriProvider } from '../providers/NammaYatriProvider';
 import { SmartRideProvider } from '../providers/SmartRideProvider';
 import { normalizeRideData } from '../normalization/normalizeRideData';
 import { EMMDEDecisionEngine } from '../agents/EMMDEDecisionEngine';
@@ -24,7 +25,7 @@ export const useRideRefreshEngine = ({
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isLiveMode, setIsLiveMode] = useState(true); // Default to Real-Time Live Mode
+  const [isLiveMode, setIsLiveMode] = useState(true);
   const [lastUpdatedTime, setLastUpdatedTime] = useState(new Date());
   const [secondsAgo, setSecondsAgo] = useState(0);
 
@@ -41,14 +42,15 @@ export const useRideRefreshEngine = ({
     }
 
     try {
-      const [uberData, olaData, rapidoData, smartData] = await Promise.all([
+      const [uberData, olaData, rapidoData, nammaData, smartData] = await Promise.all([
         UberProvider.fetchOptions({ origin, destination, isLiveMode }),
         OlaProvider.fetchOptions({ origin, destination, isLiveMode }),
         RapidoProvider.fetchOptions({ origin, destination, isLiveMode }),
+        NammaYatriProvider.fetchOptions({ origin, destination, isLiveMode }),
         SmartRideProvider.fetchOptions({ origin, destination, isLiveMode }),
       ]);
 
-      const allRaw = [...uberData, ...olaData, ...rapidoData, ...smartData];
+      const allRaw = [...uberData, ...olaData, ...rapidoData, ...nammaData, ...smartData];
       setRawRideOptions(allRaw);
 
       const now = new Date();

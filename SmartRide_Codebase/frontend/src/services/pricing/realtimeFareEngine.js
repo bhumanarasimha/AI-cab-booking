@@ -1,13 +1,7 @@
-/**
- * Real-Time Location-Based Fare Calculation Engine
- * Dynamically computes route distance (D km), ETAs, and provider pricing
- * calibrated against real-world Indian ride-hailing fares (Rapido, Ola, Uber).
- */
-
 export const calculateRouteDistanceKm = (origin, destination) => {
   let distance = 36.5;
 
-  if (origin && typeof origin === 'object' && origin.lat && origin.lng) {
+  if (origin && typeof origin === 'object' && typeof origin.lat === 'number' && typeof origin.lng === 'number') {
     const refLat = 13.114;
     const refLng = 80.097;
     const rad = Math.PI / 180;
@@ -34,6 +28,10 @@ export const calculateRouteDistanceKm = (origin, destination) => {
       distance = 28.0;
     } else if (destLower.includes('phoenix') || destLower.includes('mall')) {
       distance = 25.2;
+    } else if (destLower.includes('central') || destLower.includes('station')) {
+      distance = 31.8;
+    } else if (destLower.includes('t. nagar') || destLower.includes('teynampet')) {
+      distance = 29.5;
     }
   }
 
@@ -59,6 +57,11 @@ export const computeRealtimeFare = ({ provider, type, baseFare, ratePerKm, dista
     if (type.includes('Auto')) return Math.round(52 + distanceKm * 14.5 * surgeFactor);
     if (type.includes('Mini')) return Math.round(105 + distanceKm * 19.2 * surgeFactor);
     if (type.includes('Prime')) return Math.round(175 + distanceKm * 31.0 * surgeFactor);
+  }
+
+  if (provider === 'Namma Yatri') {
+    if (type.includes('Auto')) return Math.round(40 + distanceKm * 13.8);
+    if (type.includes('Cab')) return Math.round(90 + distanceKm * 18.2);
   }
 
   if (provider === 'SmartRide AI') {
