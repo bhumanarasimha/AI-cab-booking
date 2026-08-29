@@ -24,7 +24,7 @@ export const useRideRefreshEngine = ({
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isLiveMode, setIsLiveMode] = useState(false);
+  const [isLiveMode, setIsLiveMode] = useState(true);
   const [lastUpdatedTime, setLastUpdatedTime] = useState(new Date());
   const [secondsAgo, setSecondsAgo] = useState(0);
 

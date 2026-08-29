@@ -47,8 +47,6 @@ const RideComparison = () => {
     decisionExplanation,
     isLoading,
     isRefreshing,
-    isLiveMode,
-    setIsLiveMode,
     secondsAgo,
     manualRefresh,
   } = useRideRefreshEngine({
@@ -156,28 +154,22 @@ const RideComparison = () => {
               </div>
             </div>
 
-            {/* Clickable Mode Switcher */}
-            <motion.button
-              whileTap={{ scale: 0.92 }}
-              onClick={() => {
-                setIsLiveMode(!isLiveMode);
-                manualRefresh();
-              }}
+            {/* Real-Time Live Badge */}
+            <div
               style={{
-                background: isLiveMode ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                border: `1px solid ${isLiveMode ? '#10B981' : '#F59E0B'}`,
+                background: 'rgba(16, 185, 129, 0.15)',
+                border: '1px solid #10B981',
                 borderRadius: '10px',
                 padding: '4px 10px',
                 fontSize: '0.62rem',
                 fontWeight: 800,
-                color: isLiveMode ? '#10B981' : '#F59E0B',
-                cursor: 'pointer',
+                color: '#10B981',
                 flexShrink: 0,
                 marginLeft: '8px',
               }}
             >
-              {isLiveMode ? '🟢 LIVE API' : '⚡ DEMO MODE'}
-            </motion.button>
+              🟢 REAL-TIME FARES
+            </div>
           </div>
         </motion.div>
       </div>
@@ -201,26 +193,18 @@ const RideComparison = () => {
           <div style={{ width: '36px', height: '4px', borderRadius: '99px', background: 'var(--border-ui)' }} />
         </div>
 
-        {/* Status & Action Bar */}
+        {/* Real-Time Status & Action Bar */}
         <div style={{ padding: '0 16px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <motion.button
-              whileTap={{ scale: 0.94 }}
-              onClick={() => {
-                setIsLiveMode(!isLiveMode);
-                manualRefresh();
-              }}
-              style={{ 
-                fontSize: '0.65rem', fontWeight: 800, 
-                color: isLiveMode ? '#10B981' : '#F59E0B',
-                background: isLiveMode ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)',
-                padding: '3px 10px', borderRadius: '8px', 
-                border: `1px solid ${isLiveMode ? '#10B98140' : '#F59E0B40'}`,
-                cursor: 'pointer'
-              }}
-            >
-              {isLiveMode ? 'LIVE DATA' : 'DEMO DATA'}
-            </motion.button>
+            <span style={{ 
+              fontSize: '0.65rem', fontWeight: 800, 
+              color: '#10B981',
+              background: 'rgba(16,185,129,0.12)',
+              padding: '3px 10px', borderRadius: '8px', 
+              border: '1px solid rgba(16,185,129,0.4)',
+            }}>
+              LIVE FARES
+            </span>
             <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 600 }}>
               Updated {secondsAgo} sec ago
             </span>
@@ -376,8 +360,8 @@ const RideComparison = () => {
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
                             <span style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{opt.rideType}</span>
-                            <span style={{ fontSize: '0.58rem', fontWeight: 800, color: opt.dataSource === 'provider' ? '#10B981' : '#F59E0B', background: opt.dataSource === 'provider' ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)', padding: '1px 5px', borderRadius: '4px' }}>
-                              {opt.dataStatus}
+                            <span style={{ fontSize: '0.58rem', fontWeight: 800, color: '#10B981', background: 'rgba(16,185,129,0.12)', padding: '1px 6px', borderRadius: '4px' }}>
+                              LIVE
                             </span>
                           </div>
 

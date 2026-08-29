@@ -24,7 +24,7 @@ export const useRideRefreshEngine = ({
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isLiveMode, setIsLiveMode] = useState(false);
+  const [isLiveMode, setIsLiveMode] = useState(true); // Default to Real-Time Live Mode
   const [lastUpdatedTime, setLastUpdatedTime] = useState(new Date());
   const [secondsAgo, setSecondsAgo] = useState(0);
 
@@ -84,16 +84,13 @@ export const useRideRefreshEngine = ({
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  // Use primitive values in dependency array to eliminate infinite re-render loops
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [originLat, originLng, destination, isLiveMode, activeCategory, userPreferences, weather, urgency]);
 
-  // Initial fetch & refetch on parameter change
   useEffect(() => {
     fetchAndProcess();
   }, [fetchAndProcess]);
 
-  // Periodic interval refresh (Configurable interval, auto-pauses when tab hidden)
   useEffect(() => {
     const interval = setInterval(() => {
       if (document.visibilityState === 'visible') {
@@ -104,7 +101,6 @@ export const useRideRefreshEngine = ({
     return () => clearInterval(interval);
   }, [refreshIntervalMs, fetchAndProcess]);
 
-  // Second ticker for "Updated X sec ago" indicator
   useEffect(() => {
     const ticker = setInterval(() => {
       setLastUpdatedTime(prev => {
